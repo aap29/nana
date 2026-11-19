@@ -953,7 +953,7 @@ V.ajustes=()=>{const p=S.profile;return head('Perfil e ajustes',full()?'atelie':
   <div class="card"><h3>Modo de uso</h3><div class="seg"><button aria-pressed="${S.mode!=='coletivo'}" data-a="mode:individual">Individual</button><button aria-pressed="${S.mode==='coletivo'}" data-a="mode:coletivo">Coletivo</button></div>
    ${C()?`<label class="fld"><span>Ver o app como (teste de perfis)</span><select data-as>${C().membros.map(m=>`<option value="${m.id}" ${S.as===m.id?'selected':''}>${esc(m.nome)} · ${m.papel==='Líder'?'Líder':m.plano?'Participante com plano':'Participante sem plano'}</option>`).join('')}</select><small>Na versão online, cada pessoa entra com a própria conta e vê só o que o perfil dela permite.</small></label>`:''}</div>
   <div class="card"><h3>Cidade para o clima</h3><select data-cidade>${Object.keys(CIDADES).map(c=>`<option ${p.cidade===c?'selected':''}>${c}</option>`).join('')}</select></div>
-  <div class="card"><h3>Minha conta</h3>${S.demo?'<p>Você está na demonstração, com dados de exemplo.</p><button class="btn full" data-a="sair">Sair e criar minha conta</button>':CONTA?`<div class="kv"><span>Nome</span><b style="white-space:normal">${esc(CONTA.nome)}</b></div><div class="kv"><span>E-mail</span><b style="white-space:normal;overflow-wrap:anywhere">${esc(CONTA.email)}</b></div><div class="kv"><span>Celular</span><b>${esc(CONTA.celular)}</b></div><div class="kv"><span>Situação</span><b>${(a=>a.t==='plano'?'Plano '+esc(CONTA.plano)+(CONTA.planoAte?' até '+fd(CONTA.planoAte):''):a.t==='teste'?'Teste grátis até '+fd(CONTA.trialAte):'Teste vencido')(acesso())}</b></div><div class="kv"><span>Dados salvos</span><b>${CONTA.modo==='nuvem'?'Na nuvem e no aparelho':'Neste aparelho'}</b></div><button class="btn ghost full" data-a="sair" style="margin-top:10px">Sair da conta</button>`:''}</div>
+  <div class="card"><h3>Minha conta</h3>${S.demo?'<p>Você está na demonstração, com dados de exemplo.</p><button class="btn full" data-a="sair">Sair e criar minha conta</button>':CONTA?`<div class="kv"><span>Nome</span><b style="white-space:normal">${esc(CONTA.nome)}</b></div><div class="kv"><span>E-mail</span><b style="white-space:normal;overflow-wrap:anywhere">${esc(CONTA.email)}</b></div><div class="kv"><span>Celular</span><b>${esc(CONTA.celular)}</b></div><div class="kv"><span>Situação</span><b>${(a=>a.t==='criador'?esc(a.papel)+' · acesso livre':a.t==='plano'?'Plano '+esc(CONTA.plano)+(CONTA.planoAte?' até '+fd(CONTA.planoAte):''):a.t==='teste'?'Teste grátis até '+fd(CONTA.trialAte):'Teste vencido')(acesso())}</b></div><div class="kv"><span>Dados salvos</span><b>${CONTA.modo==='nuvem'?'Na nuvem e no aparelho':'Neste aparelho'}</b></div><button class="btn ghost full" data-a="sair" style="margin-top:10px">Sair da conta</button>`:''}</div>${CONTA&&!S.demo?(CONTA.criador?`<div class="card"><h3>Equipe Nãna · ${esc(CONTA.criador)}</h3><p class="mut">Acesso livre a todas as funções e ao painel de cadastros.</p><div class="grid2" style="margin-top:10px"><button class="btn plum" data-a="go:admin">Painel de cadastros</button><a class="btn ghost" href="${CFG.planilha}" target="_blank" rel="noopener">Abrir planilha</a></div></div>`:`<div class="card"><h3>Equipe Nãna</h3><p class="mut">É da equipe de criadores? Use o seu código para liberar o acesso de criador nesta conta.</p><button class="btn ghost full" data-a="criador" style="margin-top:8px">Tenho código de criador</button></div>`):''}
   <div class="card"><h3>Mais</h3><div class="grid2"><button class="btn ghost sm" data-a="go:baixar">Baixar e compartilhar</button><button class="btn ghost sm" data-a="go:seguranca">Segurança</button>${isAdmin()?'<button class="btn ghost sm" data-a="go:admin">Cadastros (Marca & Estratégia)</button>':''}${S.demo?'<button class="btn ghost sm" data-a="resetDemo">Reiniciar demonstração</button>':''}<button class="btn danger sm" data-a="wipe">Começar do zero</button></div></div></div>
   ${full()?`<form class="card" data-f="profile"><h3>Seus dados</h3>
    ${[['nome','Seu nome'],['loja','Nome do ateliê'],['bairro','Bairro e cidade'],['whats','WhatsApp'],['pix','Chave PIX'],['slug','Endereço da vitrine (nana.app.br/…)']].map(([k,l])=>`<label class="fld"><span>${l}</span><input name="${k}" value="${esc(p[k])}" maxlength="120"></label>`).join('')}
@@ -1281,7 +1281,7 @@ function render(){
   const tabOf={hoje:'hoje',p_inicio:'p_inicio',agenda:'agenda',pedidos:'pedidos',dinheiro:'dinheiro',p_msgs:'p_msgs',p_convites:'p_convites',p_vendas:'p_vendas'}[r]||(full()?'atelie':'');
   const ofOpts=`<option value="todos">Todos os ofícios</option>${S.oficios.map(o=>`<option value="${o.id}" ${S.ofSel===o.id?'selected':''}>${esc(o.nome)}</option>`).join('')}`;
   $('#tabs').innerHTML=navItems().map(([k,n,ic])=>{const b=badgeFor(k);return `<button data-a="go:${k}" ${k===tabOf?'aria-current="page"':''}>${ic}${n}${b?`<span class="badge">${b}</span>`:''}</button>`}).join('');
-  $('#top').innerHTML=`<div class="logo">${LOGO}Nãna</div><span class="sp"></span>${full()?`<select id="ofSel" aria-label="Ofício">${ofOpts}</select>`:''}<button class="pill alt" data-a="go:${full()&&isLeader()?'comunidade':'ajustes'}">${C()?(isLeader()?'Líder':full()?'Participante+':'Participante'):'Individual'}</button>${(()=>{const a=acesso();return a.t==='teste'?`<button class="pill" data-a="go:planos">Teste: ${a.dias}d</button>`:a.t==='expirado'?`<button class="pill" data-a="go:planos">Assinar</button>`:''})()}${S.lock.on?`<button class="pill alt" data-a="lockNow" aria-label="Bloquear agora">${ICON.shield.replace('<svg','<svg width="18" height="18"')}</button>`:''}`;
+  $('#top').innerHTML=`<div class="logo">${LOGO}Nãna</div><span class="sp"></span>${full()?`<select id="ofSel" aria-label="Ofício">${ofOpts}</select>`:''}<button class="pill alt" data-a="go:${full()&&isLeader()?'comunidade':'ajustes'}">${C()?(isLeader()?'Líder':full()?'Participante+':'Participante'):'Individual'}</button>${(()=>{const a=acesso();return a.t==='criador'?`<button class="pill" data-a="go:admin">${esc(a.papel)}</button>`:a.t==='teste'?`<button class="pill" data-a="go:planos">Teste: ${a.dias}d</button>`:a.t==='expirado'?`<button class="pill" data-a="go:planos">Assinar</button>`:''})()}${S.lock.on?`<button class="pill alt" data-a="lockNow" aria-label="Bloquear agora">${ICON.shield.replace('<svg','<svg width="18" height="18"')}</button>`:''}`;
   $('#side').innerHTML=`<div class="logo">${LOGO}Nãna</div>${full()?`<select data-ofsel aria-label="Ofício">${ofOpts}</select>`:`<p style="opacity:.85;padding:0 10px;margin:0 0 8px">${esc(C()?.nome||'')} · Participante</p>`}${sideItems().map(([k,n,ic])=>k==='sep'?'<div class="sep"></div>':`<button class="nav" data-a="go:${k}" ${k===r||(k==='pedidos'&&r==='pedidos')?'aria-current="page"':''}>${ic}${n}${badgeFor(k)?`<span class="badge">${badgeFor(k)}</span>`:''}</button>`).join('')}<div class="sep"></div><p style="opacity:.7;font-size:.78rem;padding:0 10px">${esc(myName())}${C()?' · '+(isLeader()?'Líder':'Participante'):''}</p>`;
   $('#fab').style.display=r==='nana'||r==='loja'?'none':'grid';
   document.title='Nãna — '+({hoje:'Hoje',p_inicio:'Início',agenda:'Agenda',pedidos:'Pedidos',dinheiro:'Dinheiro',nana:'Minha Nãna',planos:'Planos',comunidade:'Comunidade',loja:'Vitrine'}[r]||'Ateliê');
@@ -1291,26 +1291,37 @@ function render(){
 /* ================= CONTA, CADASTRO E TESTE GRÁTIS ================= */
 /* Para ligar o banco na nuvem, preencha supabaseUrl e supabaseKey (chave "anon public" do Supabase).
    Vazio = contas guardadas só neste aparelho. */
-const CFG={supabaseUrl:'',supabaseKey:'',site:'https://aap29.github.io/nana/',suporte:'51984168848',trialDias:7};
+const CFG={supabaseUrl:'',supabaseKey:'',site:'https://aap29.github.io/nana/',suporte:'51984168848',trialDias:7,
+  registro:'', /* URL /exec do Apps Script da planilha central de cadastros */
+  planilha:'https://docs.google.com/spreadsheets/d/1Y8vD7ojqufqmm3lfzY7tPo7wIxKnCieWtV9jObeXi9Y/edit'};
+/* Criadores (CEO e cofundadores): a lista fica só na aba "Criadores" da planilha central, que é privada.
+   O acesso de criador abre com o e-mail da lista + o código de criador. Sem planilha ligada, vale só o código. */
+const CRIADOR_COD={salt:'Q4rg59Dc9ymBCbP/fqfeoQ==',hash:'MGD0B0S2pBFx5/L1PPBTU+Sk7Mgx8pA0hMDkI1qWC34='};
+function reg(acao,dados){if(!CFG.registro)return;try{fetch(CFG.registro,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({acao,aparelho:(plat()+' · '+(isStandalone()?'app instalado':'navegador')).slice(0,60),...dados}),keepalive:true}).catch(()=>{})}catch(e){}}
+function regAcesso(c){if(!c||!c.email)return;const k='nana_reg_'+c.id,t=Date.now();try{if(t-(+localStorage.getItem(k)||0)<6*3600e3)return;localStorage.setItem(k,t)}catch(e){}
+  reg('acesso',{email:c.email,nome:c.nome,celular:c.celular,cidade:c.cidade,atividade:c.atividade,trialAte:c.trialAte,id:c.id})}
+async function checarCriador(email,codigo){codigo=String(codigo||'').trim().toUpperCase();if(!codigo)return '';
+  if(CFG.registro){try{const r=await fetch(CFG.registro+'?acao=criador&email='+encodeURIComponent(email)+'&codigo='+encodeURIComponent(codigo));const j=await r.json();return j&&j.ok?(j.papel||'Cofundador'):''}catch(e){toast('Sem internet para conferir o código.');return ''}}
+  return (await passHash(codigo,CRIADOR_COD.salt))===CRIADOR_COD.hash?'Criador':''}
 const ATIVIDADES=['Costura e bordado','Crochê e tricô','Bonecas','Bijuterias e acessórios','Cerâmica','Pintura e artes visuais','Produtos personalizados','Confeitaria artesanal','Oficinas e cursos','Outra'];
 const CK_CONTA='nana_conta',CK_CADS='nana_cadastros';
 let SB=null,CONTA=null,syncT=null,AUTHM='criar';
 const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
 const lsSet=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const isCloud=()=>!!SB;
-const isAdmin=()=>!!(S&&S.demo)||!!(CONTA&&CONTA.admin);
+const isAdmin=()=>!!(S&&S.demo)||!!(CONTA&&(CONTA.admin||CONTA.criador));
 async function passHash(p,salt){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(p),'PBKDF2',false,['deriveBits']);const b=await crypto.subtle.deriveBits({name:'PBKDF2',salt:ub64(salt),iterations:150000,hash:'SHA-256'},k,256);return b64(new Uint8Array(b))}
 function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
 async function sbInit(){if(!CFG.supabaseUrl||!CFG.supabaseKey)return;try{await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js');SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey);
   SB.auth.onAuthStateChange(ev=>{if(ev==='PASSWORD_RECOVERY'){AUTHM='nova';showAuth()}})}catch(e){SB=null}}
 
-function acesso(){if(!S||S.demo)return{t:'demo',ok:true};const c=CONTA;if(!c)return{t:'livre',ok:true};
+function acesso(){if(!S||S.demo)return{t:'demo',ok:true};const c=CONTA;if(!c)return{t:'livre',ok:true};if(c.criador)return{t:'criador',ok:true,papel:c.criador};
   if(c.plano&&c.plano!=='gratis'&&(!c.planoAte||c.planoAte>=TODAY()))return{t:'plano',ok:true,ate:c.planoAte};
   if(c.trialAte&&c.trialAte>=TODAY())return{t:'teste',ok:true,dias:days(c.trialAte)};
   return{t:'expirado',ok:false}}
 const EXP_ROUTES=['hoje','p_inicio','agenda','pedidos','dinheiro','planos','ajustes','seguranca','admin','baixar','expirou','p_msgs','p_convites','p_vendas'];
 const WRITE=new Set(['newOrder','newMove','newQuote','pasteWa','newAppt','adv','receber','editOrder','editQuote','sendQuote','q2order','ib2order','ib2quote','calcReset','calcCurso','newEv','newCourse','editProd','editMat','shopList','tGo','newCE','invite','newLanc','p_lanc','newCusto','ask','splitCfg','editOf','paga','qty','editAppt','newCC','resp','conf','acertar']);
-const FREE_FORMS=new Set(['profile','pin','ativar']);
+const FREE_FORMS=new Set(['profile','pin','ativar','criador']);
 function banner(){const a=acesso();
   if(a.t==='teste')return `<div class="ban t" role="status"><span class="sp">Teste grátis: ${a.dias===0?'último dia':`faltam ${a.dias} dia${a.dias>1?'s':''}`}. Tudo liberado até ${fd(CONTA.trialAte)}.</span><button class="btn sm" data-a="go:planos">Assinar</button></div>`;
   if(a.t==='expirado')return `<div class="ban x" role="status"><span class="sp">Seu teste de 7 dias terminou. Seus dados estão guardados: você pode ver tudo, mas para criar e editar precisa de um plano.</span><button class="btn sm" data-a="go:planos">Ver planos</button></div>`;
@@ -1349,7 +1360,7 @@ function authHTML(){const m=AUTHM;
 function showAuth(){const a=$('#auth');a.innerHTML=authHTML();a.hidden=false;$('#view').innerHTML='';$('#tabs').innerHTML='';$('#side').innerHTML='';$('#top').innerHTML='';$('#fab').style.display='none';setTimeout(()=>{const i=a.querySelector('input');i&&i.focus()},60)}
 function hideAuth(){$('#auth').hidden=true}
 const fmtTel=v=>{const d=v.replace(/\D/g,'').slice(0,11);if(d.length<3)return d;if(d.length<7)return `(${d.slice(0,2)}) ${d.slice(2)}`;return d.length===11?`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`:`(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`};
-const PRIV=`<p>O Nãna guarda nome completo, celular, e-mail, cidade e atividade artesanal para criar sua conta, liberar o teste grátis, falar com você sobre o app e mostrar sua vitrine (só o que você publicar).</p><p>Os dados do seu ateliê (clientes, pedidos e dinheiro) são só seus: ninguém da equipe vê esses valores. Você pode copiar todos os seus dados ou pedir a exclusão a qualquer momento em Segurança.</p><p>Responsável: Marca & Estratégia Tecnologias Comerciais · WhatsApp (51) 98416-8848.</p>`;
+const PRIV=`<p>O Nãna guarda nome completo, celular, e-mail, cidade e atividade artesanal para criar sua conta, liberar o teste grátis, falar com você sobre o app e mostrar sua vitrine (só o que você publicar).</p><p>O cadastro (sem a senha) e as datas de acesso ficam numa planilha protegida da equipe, usada para suporte e avisos sobre o seu plano. Os dados do seu ateliê (clientes, pedidos e dinheiro) são só seus: ninguém da equipe vê esses valores. Você pode copiar todos os seus dados ou pedir a exclusão a qualquer momento em Segurança.</p><p>Responsável: Marca & Estratégia Tecnologias Comerciais · WhatsApp (51) 98416-8848.</p>`;
 $('#auth').addEventListener('click',e=>{const t=e.target;
   if(t.closest('[data-am]')){e.preventDefault();AUTHM=t.closest('[data-am]').dataset.am;showAuth()}
   else if(t.closest('[data-pw]')){const i=t.closest('.pwd').querySelector('input');i.type=i.type==='password'?'text':'password';t.textContent=i.type==='password'?'ver':'ocultar'}
@@ -1372,10 +1383,10 @@ $('#auth').addEventListener('submit',async e=>{e.preventDefault();const f=e.targ
     const cad={nome:d.nome.trim().replace(/\s+/g,' '),celular:fmtTel(tel),email:em,cidade:d.cidade.trim(),atividade:d.atividade};
     if(isCloud()){const {data,error}=await SB.auth.signUp({email:em,password:d.senha,options:{data:{nome_completo:cad.nome,celular:cad.celular,cidade:cad.cidade,atividade:cad.atividade,aceite_lgpd:true},emailRedirectTo:location.origin+location.pathname}});
       if(error)return fail(/registered/i.test(error.message)?'Este e-mail já tem conta. Use Entrar.':'Não deu para criar a conta: '+error.message);
-      if(!data.session){AUTHM='confirme';showAuth();return}await cloudLogin(data.user,cad);return}
+      reg('cadastro',{id:data.user&&data.user.id,...cad,trialAte:dd(CFG.trialDias)});if(!data.session){AUTHM='confirme';showAuth();return}await cloudLogin(data.user,cad);return}
     const cads=lsGet(CK_CADS)||[];if(cads.some(c=>c.email===em))return fail('Este e-mail já tem conta neste aparelho. Use Entrar.');
     const salt=b64(crypto.getRandomValues(new Uint8Array(16)));const c={id:uid()+uid(),...cad,criado:TODAY(),trialAte:dd(CFG.trialDias),plano:'gratis',planoAte:null,salt,hash:await passHash(d.senha,salt),acessos:1,ultimo:new Date().toISOString(),lgpd:new Date().toISOString()};
-    cads.push(c);lsSet(CK_CADS,cads);localLogin(c,true);return}
+    cads.push(c);lsSet(CK_CADS,cads);try{localStorage.setItem('nana_reg_'+c.id,Date.now())}catch(e){}reg('cadastro',{id:c.id,...cad,trialAte:c.trialAte});localLogin(c,true);return}
    if(m==='entrar'){const em=(d.email||'').trim().toLowerCase();
     if(isCloud()){const {data,error}=await SB.auth.signInWithPassword({email:em,password:d.senha});if(error)return fail(/confirm/i.test(error.message)?'Confirme seu e-mail antes de entrar (veja sua caixa de entrada).':'E-mail ou senha não conferem.');await cloudLogin(data.user);return}
     const cads=lsGet(CK_CADS)||[],c=cads.find(x=>x.email===em);if(!c||await passHash(d.senha,c.salt)!==c.hash)return fail('E-mail ou senha não conferem.');
@@ -1386,12 +1397,12 @@ $('#auth').addEventListener('submit',async e=>{e.preventDefault();const f=e.targ
 
 function openData(){const raw=rawLoad();if(raw&&raw.enc){hideAuth();if(hasCrypto)showLock();else showLock();return true}S=raw&&raw.profile?raw:null;return false}
 function startDemo(){CONTA=null;KEY='nana_v3_demo';if(openData())return;if(!S)S=demo();hideAuth();boot()}
-function localLogin(c,novo){const {hash,salt,...pub}=c;CONTA={modo:'local',...pub};lsSet(CK_CONTA,{modo:'local',id:c.id});KEY='nana_v3_'+c.id;if(openData())return;if(!S)S=blankState(CONTA);hideAuth();boot();if(novo)setTimeout(()=>openSheet('Bem-vinda ao Nãna!',welcome()),300)}
+function localLogin(c,novo){const {hash,salt,...pub}=c;CONTA={modo:'local',...pub};regAcesso(CONTA);lsSet(CK_CONTA,{modo:'local',id:c.id});KEY='nana_v3_'+c.id;if(openData())return;if(!S)S=blankState(CONTA);hideAuth();boot();if(novo)setTimeout(()=>openSheet('Bem-vinda ao Nãna!',welcome()),300)}
 async function cloudLogin(user,cad){
   const {data:p,error}=await SB.from('perfis').select('*').eq('id',user.id).maybeSingle();
   if(error||!p){toast('Não consegui abrir seu cadastro. Tente de novo.');AUTHM='entrar';showAuth();return}
-  CONTA={modo:'nuvem',id:user.id,nome:p.nome_completo,celular:p.celular,email:user.email,cidade:p.cidade,atividade:p.atividade,criado:(p.criado_em||'').slice(0,10),trialAte:p.trial_ate,plano:p.plano,planoAte:p.plano_valido_ate,admin:!!p.admin_plataforma};
-  lsSet(CK_CONTA,{modo:'nuvem',id:user.id});KEY='nana_v3_'+user.id;
+  CONTA={modo:'nuvem',id:user.id,nome:p.nome_completo,celular:p.celular,email:user.email,cidade:p.cidade,atividade:p.atividade,criado:(p.criado_em||'').slice(0,10),trialAte:p.trial_ate,plano:p.plano,planoAte:p.plano_valido_ate,admin:!!p.admin_plataforma};{const pc=lsGet('nana_criador_'+user.id);if(pc){CONTA.criador=pc;CONTA.plano='criador'}}
+  lsSet(CK_CONTA,{modo:'nuvem',id:user.id});KEY='nana_v3_'+user.id;regAcesso(CONTA);
   SB.rpc('registrar_acesso',{dispositivo:(plat()+' · '+(isStandalone()?'app instalado':'navegador')).slice(0,60)}).then(()=>{},()=>{});
   if(openData())return;
   if(!S){const {data:st}=await SB.from('estado_app').select('dados').eq('usuario_id',user.id).maybeSingle();S=st&&st.dados&&st.dados.profile?st.dados:blankState(CONTA)}
@@ -1436,8 +1447,8 @@ const DEMO_CADS=()=>[
  {id:'d4',nome:'Rose Batuque Lima',celular:'(51) 90000-1104',email:'rose.exemplo@email.com',cidade:'Porto Alegre',atividade:'Bonecas',criado:dd(-30),trialAte:dd(-23),plano:'mensal',planoAte:dd(3),ultimo:dd(-8),acessos:41},
  {id:'d5',nome:'Dandara Souza Reis',celular:'(51) 90000-1105',email:'dandara.exemplo@email.com',cidade:'Alvorada',atividade:'Bijuterias e acessórios',criado:dd(-45),trialAte:dd(-38),plano:'anual',planoAte:dd(320),ultimo:dd(0),acessos:77},
  {id:'d6',nome:'Joana Prado',celular:'(51) 90000-1101',email:'joana2.exemplo@email.com',cidade:'Porto Alegre',atividade:'Crochê e tricô',criado:dd(0),trialAte:dd(7),plano:'gratis',planoAte:null,ultimo:dd(0),acessos:1}];
-const stCad=c=>c.plano&&c.plano!=='gratis'&&(!c.planoAte||c.planoAte>=TODAY())?'assinante':c.trialAte>=TODAY()?'teste':'vencido';
-const stNome={assinante:'Assinante',teste:'Em teste',vencido:'Teste vencido'};
+const stCad=c=>c.criador||c.plano==='criador'?'criador':c.plano&&c.plano!=='gratis'&&(!c.planoAte||c.planoAte>=TODAY())?'assinante':c.trialAte>=TODAY()?'teste':'vencido';
+const stNome={criador:'Criador',assinante:'Assinante',teste:'Em teste',vencido:'Teste vencido'};
 const ultDia=c=>(c.ultimo||'').slice(0,10);
 async function loadCads(){if(isCloud()&&CONTA&&CONTA.admin){const {data,error}=await SB.rpc('painel_cadastros');if(error){toast('Sem permissão para ver os cadastros.');UI.cads=[];return}
    UI.cads=data.map(r=>({id:r.id,nome:r.nome_completo,celular:r.celular,email:r.email,cidade:r.cidade,atividade:r.atividade,criado:(r.criado_em||'').slice(0,10),trialAte:r.trial_ate,plano:r.plano,planoAte:r.plano_valido_ate,ultimo:r.ultimo_acesso||'',acessos:r.total_acessos||0}))}
@@ -1449,7 +1460,7 @@ function cadMsg(c,k){const n=first(c.nome),sig='\n\nEquipe Nãna · Marca & Estr
   reconquista:`Oi, ${n}! Seu teste do Nãna terminou, mas todos os seus dados continuam guardados. Quando quiser voltar a usar tudo, ativo seu plano na hora: mensal ${brl(PLANOS_IND.mensal)} ou anual ${brl(PLANOS_IND.anual)}.`,
   retencao:`Oi, ${n}! Sentimos sua falta no Nãna. Posso te ajudar a organizar as encomendas desta semana pelo app? Em 10 minutos deixamos tudo pronto.`,
   renovacao:`Oi, ${n}! Seu plano do Nãna vence em ${fd(c.planoAte)}. Quer renovar para não perder o ritmo? Te mando o PIX.`}[k]+sig}
-function cadSkills(L){const out=[],t=TODAY();
+function cadSkills(L){L=L.filter(c=>stCad(c)!=='criador');const out=[],t=TODAY();
   L.filter(c=>days(c.criado)>=-2).forEach(c=>out.push({k:'Recepção',c,txt:`Cadastrou ${days(c.criado)===0?'hoje':quando(c.criado).toLowerCase()}`,m:'boasvindas'}));
   L.filter(c=>stCad(c)==='teste'&&days(c.trialAte)<=2).forEach(c=>out.push({k:'Conversão',c,txt:`Teste termina ${quando(c.trialAte).toLowerCase()}`,m:'conversao',cls:'r'}));
   L.filter(c=>stCad(c)==='vencido').forEach(c=>out.push({k:'Reconquista',c,txt:`Teste venceu em ${fd(c.trialAte)} · funções bloqueadas, dados guardados`,m:'reconquista'}));
@@ -1465,8 +1476,8 @@ V.admin=()=>{if(!isAdmin())return V.hoje();if(!UI.cadsOk){loadCads();return head
   const cnt=k=>L.filter(c=>stCad(c)===k).length,sk=cadSkills(L);
   const grp=key=>{const m={};L.forEach(c=>m[c[key]||'—']=(m[c[key]||'—']||0)+1);const mx=Math.max(1,...Object.values(m));return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,v])=>`<div style="margin:8px 0"><div class="row"><span class="sp">${esc(n)}</span><b>${v}</b></div><div class="meter"><i style="width:${v/mx*100}%;background:var(--plum2)"></i></div></div>`).join('')};
   const mrr=L.filter(c=>stCad(c)==='assinante').reduce((a,c)=>a+(c.plano==='anual'?PLANOS_IND.anual/12:c.plano==='mensal'?PLANOS_IND.mensal:0),0);
-  return head('Cadastros do Nãna','ajustes')+`<div class="wrap">${S.demo?'<div class="demo">Pessoas fictícias de demonstração. Com o banco na nuvem ligado, aqui aparecem os cadastros reais, e só para a equipe Marca & Estratégia.</div>':isCloud()?'':'<div class="demo">Sem banco na nuvem: aparecem só as contas criadas neste aparelho.</div>'}
-   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px">${[['Cadastros',L.length],['Em teste',cnt('teste')],['Assinantes',cnt('assinante')],['Teste vencido',cnt('vencido')],['Receita mensal',brl(mrr)]].map(([n,v])=>`<div class="card" style="margin:0"><span class="mut">${n}</span><br><b style="font:800 1.6rem/1.1 'Baloo 2',sans-serif">${v}</b></div>`).join('')}</div>
+  return head('Cadastros do Nãna','ajustes')+`<div class="wrap">${S.demo?'':`<div class="card"><div class="row"><div class="sp"><h3>Planilha central de cadastros</h3><p class="mut">${CFG.registro?'Cada cadastro e acesso, de qualquer aparelho, cai na planilha. Você recebe um e-mail a cada cadastro e o resumo do dia às 8h.':'A ligação com a planilha ainda não foi ativada: por enquanto aparecem só as contas deste aparelho.'}</p></div><a class="btn plum sm" href="${CFG.planilha}" target="_blank" rel="noopener">Abrir planilha</a></div></div>`}${S.demo?'<div class="demo">Pessoas fictícias de demonstração. Com o banco na nuvem ligado, aqui aparecem os cadastros reais, e só para a equipe Marca & Estratégia.</div>':isCloud()?'':'<div class="demo">Sem banco na nuvem: aparecem só as contas criadas neste aparelho.</div>'}
+   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px">${[['Cadastros',L.filter(c=>stCad(c)!=='criador').length],['Em teste',cnt('teste')],['Assinantes',cnt('assinante')],['Teste vencido',cnt('vencido')],['Receita mensal',brl(mrr)]].map(([n,v])=>`<div class="card" style="margin:0"><span class="mut">${n}</span><br><b style="font:800 1.6rem/1.1 'Baloo 2',sans-serif">${v}</b></div>`).join('')}</div>
    <h2 style="margin-top:20px">Assistentes de acompanhamento</h2><p class="mut">Cada assistente vigia um momento da artesã e prepara a mensagem. Você confere e envia.</p>
    <div class="cols cols3">${Object.keys(SKD).map(k=>{const it=sk.filter(x=>x.k===k);return `<div class="card"><h3>Nãna ${k}</h3><p class="mut">${SKD[k]}</p>${it.length?it.slice(0,6).map(x=>`<div class="alert ${x.cls||''}"><div class="t"><b>${esc(x.c.nome)}</b><span class="mut">${esc(x.txt)}</span><div class="row" style="margin-top:6px">${x.m?`<a class="btn sm" href="${waLink(x.c.celular,cadMsg(x.c,x.m))}" target="_blank" rel="noopener">WhatsApp</a>`:''}<button class="btn ghost sm" data-a="cadVer:${x.c.id}">Ver</button></div></div></div>`).join(''):'<p class="in" style="font-weight:800">Nada pendente.</p>'}</div>`}).join('')}</div>
    <div class="cols"><div class="card"><h3>Por cidade</h3>${grp('cidade')||'<p class="mut">—</p>'}</div><div class="card"><h3>Por atividade</h3>${grp('atividade')||'<p class="mut">—</p>'}</div></div>
@@ -1477,6 +1488,12 @@ V.admin=()=>{if(!isAdmin())return V.hoje();if(!UI.cadsOk){loadCads();return head
     ${vis.map(c=>`<tr data-a="cadVer:${c.id}" style="cursor:pointer"><td><b>${esc(c.nome)}</b></td><td>${esc(c.celular)}</td><td style="overflow-wrap:anywhere">${esc(c.email)}</td><td>${esc(c.cidade)}</td><td>${esc(c.atividade)}</td><td>${fd(c.criado)}</td><td><span class="tag ${stCad(c)==='assinante'?'s-pronto':stCad(c)==='vencido'?'s-afazer':''}">${stNome[stCad(c)]}${stCad(c)==='teste'?' · '+Math.max(0,days(c.trialAte))+'d':''}</span></td><td class="n">${c.acessos||0}</td><td>${ultDia(c)?quando(ultDia(c)):'—'}</td></tr>`).join('')}</tbody></table></div>${vis.length?'':'<p class="empty">Nenhum cadastro aqui.</p>'}</div>
    <p class="note">Senhas nunca aparecem aqui: ficam embaralhadas e nem a equipe consegue ver. Vendas e clientes das artesãs também não aparecem.</p></div>`};
 A.cf=k=>{UI.cf=k;render()};
+A.criador=()=>openSheet('Acesso de criador',`<form data-f="criador"><p class="mut">Entre com o código de criador da Marca & Estratégia. ${CFG.registro?'O e-mail desta conta precisa estar na aba Criadores da planilha central.':''}</p><label class="fld"><span>Código de criador</span><input name="codigo" required autocomplete="off" autocapitalize="characters" placeholder="NANA-0000-0000"></label><button class="btn full">Liberar acesso</button></form>`);
+F.criador=async d=>{const papel=await checarCriador(CONTA.email,d.codigo);if(!papel){toast('Código ou e-mail não confere.');return}
+  CONTA.criador=papel;CONTA.plano='criador';CONTA.planoAte=null;
+  if(CONTA.modo==='local'){const cads=lsGet(CK_CADS)||[],c=cads.find(x=>x.id===CONTA.id);if(c){c.criador=papel;c.plano='criador';c.planoAte=null;lsSet(CK_CADS,cads)}}
+  else lsSet('nana_criador_'+CONTA.id,papel);
+  closeSheet();UI.cadsOk=false;render();toast('Acesso de '+papel+' liberado.')};
 A.cadReload=()=>{UI.cadsOk=false;render()};
 A.cadCsv=()=>{const L=UI.cads||[];const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;copy(['Nome completo;Celular;E-mail;Cidade;Atividade;Cadastro;Situação;Teste até;Plano;Plano até;Acessos;Último acesso',...L.map(c=>[c.nome,c.celular,c.email,c.cidade,c.atividade,c.criado,stNome[stCad(c)],c.trialAte,c.plano,c.planoAte||'',c.acessos||0,ultDia(c)].map(q).join(';'))].join('\n'))};
 A.cadVer=id=>{const c=(UI.cads||[]).find(x=>x.id===id);if(!c)return;const s=stCad(c);
@@ -1486,7 +1503,7 @@ A.ativar=id=>{const c=(UI.cads||[]).find(x=>x.id===id);openSheet('Ativar plano d
 F.ativar=async(d,f)=>{const id=f.dataset.id;if(isCloud()&&!S.demo){const {error}=await SB.rpc('ativar_plano',{alvo:id,novo_plano:d.plano,valido_ate:d.ate});if(error){toast('Não foi possível ativar: '+error.message);return}}
   else if(!S.demo){const cads=lsGet(CK_CADS)||[],c=cads.find(x=>x.id===id);if(c){c.plano=d.plano;c.planoAte=d.ate;lsSet(CK_CADS,cads)}}
   const c=(UI.cads||[]).find(x=>x.id===id);if(c){c.plano=d.plano;c.planoAte=d.ate}if(CONTA&&CONTA.id===id){CONTA.plano=d.plano;CONTA.planoAte=d.ate}
-  closeSheet();render();toast('Plano ativado até '+fd(d.ate))};
+  if(c&&!S.demo)reg('plano',{email:c.email,plano:d.plano,planoAte:d.ate});closeSheet();render();toast('Plano ativado até '+fd(d.ate))};
 document.addEventListener('input',e=>{if(e.target.id==='cadQ'){UI.cq=e.target.value;const p=e.target.selectionStart;render();const i=$('#cadQ');if(i){i.focus();i.setSelectionRange(p,p)}}});
 
 /* ================= INÍCIO ================= */
