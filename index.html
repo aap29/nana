@@ -458,7 +458,7 @@ const ME=()=>C()?C().membros.find(m=>m.id===S.as)||C().membros[0]:null;
 const MEM=id=>C()?.membros.find(m=>m.id===id);
 const isLeader=()=>!C()||ME()?.papel==='Líder';
 const full=()=>!C()||isLeader()||!!ME()?.plano;
-const myName=()=>C()?ME().nome:S.profile.nome;
+const myName=()=>CONTA&&CONTA.criador?(CONTA.apelido||APELIDO_CRIADOR):C()?ME().nome:S.profile.nome;
 function logC(a){C()&&C().log.unshift({q:TODAY()+' '+new Date().toTimeString().slice(0,5),u:S.as,a})}
 const PART_ROUTES=['p_inicio','agenda','p_msgs','p_convites','p_vendas','ajustes','planos','comunidade'];
 
@@ -953,7 +953,7 @@ V.ajustes=()=>{const p=S.profile;return head('Perfil e ajustes',full()?'atelie':
   <div class="card"><h3>Modo de uso</h3><div class="seg"><button aria-pressed="${S.mode!=='coletivo'}" data-a="mode:individual">Individual</button><button aria-pressed="${S.mode==='coletivo'}" data-a="mode:coletivo">Coletivo</button></div>
    ${C()?`<label class="fld"><span>Ver o app como (teste de perfis)</span><select data-as>${C().membros.map(m=>`<option value="${m.id}" ${S.as===m.id?'selected':''}>${esc(m.nome)} · ${m.papel==='Líder'?'Líder':m.plano?'Participante com plano':'Participante sem plano'}</option>`).join('')}</select><small>Na versão online, cada pessoa entra com a própria conta e vê só o que o perfil dela permite.</small></label>`:''}</div>
   <div class="card"><h3>Cidade para o clima</h3><select data-cidade>${Object.keys(CIDADES).map(c=>`<option ${p.cidade===c?'selected':''}>${c}</option>`).join('')}</select></div>
-  <div class="card"><h3>Minha conta</h3>${S.demo?'<p>Você está na demonstração, com dados de exemplo.</p><button class="btn full" data-a="sair">Sair e criar minha conta</button>':CONTA?`<div class="kv"><span>Nome</span><b style="white-space:normal">${esc(CONTA.nome)}</b></div><div class="kv"><span>E-mail</span><b style="white-space:normal;overflow-wrap:anywhere">${esc(CONTA.email)}</b></div><div class="kv"><span>Celular</span><b>${esc(CONTA.celular)}</b></div><div class="kv"><span>Situação</span><b>${(a=>a.t==='criador'?esc(a.papel)+' · acesso livre':a.t==='plano'?'Plano '+esc(CONTA.plano)+(CONTA.planoAte?' até '+fd(CONTA.planoAte):''):a.t==='teste'?'Teste grátis até '+fd(CONTA.trialAte):'Teste vencido')(acesso())}</b></div><div class="kv"><span>Dados salvos</span><b>${CONTA.modo==='nuvem'?'Na nuvem e no aparelho':'Neste aparelho'}</b></div><button class="btn ghost full" data-a="sair" style="margin-top:10px">Sair da conta</button>`:''}</div>${CONTA&&!S.demo?(CONTA.criador?`<div class="card"><h3>Equipe Nãna · ${esc(CONTA.criador)}</h3><p class="mut">Acesso livre a todas as funções e ao painel de cadastros.</p><div class="grid2" style="margin-top:10px"><button class="btn plum" data-a="go:admin">Painel de cadastros</button><a class="btn ghost" href="${CFG.planilha}" target="_blank" rel="noopener">Abrir planilha</a></div></div>`:`<div class="card"><h3>Equipe Nãna</h3><p class="mut">É da equipe de criadores? Use o seu código para liberar o acesso de criador nesta conta.</p><button class="btn ghost full" data-a="criador" style="margin-top:8px">Tenho código de criador</button></div>`):''}
+  <div class="card"><h3>Minha conta</h3>${S.demo?'<p>Você está na demonstração, com dados de exemplo.</p><button class="btn full" data-a="sair">Sair e criar minha conta</button>':CONTA?`<div class="kv"><span>Nome</span><b style="white-space:normal">${esc(CONTA.criador?(CONTA.apelido||APELIDO_CRIADOR):CONTA.nome)}</b></div><div class="kv"><span>E-mail</span><b style="white-space:normal;overflow-wrap:anywhere">${esc(CONTA.email)}</b></div><div class="kv"><span>Celular</span><b>${esc(CONTA.celular)}</b></div><div class="kv"><span>Situação</span><b>${(a=>a.t==='criador'?esc(a.papel)+' · acesso livre':a.t==='plano'?'Plano '+esc(CONTA.plano)+(CONTA.planoAte?' até '+fd(CONTA.planoAte):''):a.t==='teste'?'Teste grátis até '+fd(CONTA.trialAte):'Teste vencido')(acesso())}</b></div><div class="kv"><span>Dados salvos</span><b>${CONTA.modo==='nuvem'?'Na nuvem e no aparelho':'Neste aparelho'}</b></div><button class="btn ghost full" data-a="sair" style="margin-top:10px">Sair da conta</button>`:''}</div>${CONTA&&!S.demo?(CONTA.criador?`<div class="card"><h3>Equipe Nãna · ${esc(CONTA.criador)}</h3><p class="mut">Acesso livre a todas as funções e ao painel de cadastros.</p><div class="grid2" style="margin-top:10px"><button class="btn plum" data-a="go:admin">Painel de cadastros</button><a class="btn ghost" href="${CFG.planilha}" target="_blank" rel="noopener">Abrir planilha</a></div></div>`:`<div class="card"><h3>Equipe Nãna</h3><p class="mut">É da equipe de criadores? Use o seu código para liberar o acesso de criador nesta conta.</p><button class="btn ghost full" data-a="criador" style="margin-top:8px">Tenho código de criador</button></div>`):''}
   <div class="card"><h3>Mais</h3><div class="grid2"><button class="btn ghost sm" data-a="go:baixar">Baixar e compartilhar</button><button class="btn ghost sm" data-a="go:seguranca">Segurança</button>${isAdmin()?'<button class="btn ghost sm" data-a="go:admin">Cadastros (Marca & Estratégia)</button>':''}${S.demo?'<button class="btn ghost sm" data-a="resetDemo">Reiniciar demonstração</button>':''}<button class="btn danger sm" data-a="wipe">Começar do zero</button></div></div></div>
   ${full()?`<form class="card" data-f="profile"><h3>Seus dados</h3>
    ${[['nome','Seu nome'],['loja','Nome do ateliê'],['bairro','Bairro e cidade'],['whats','WhatsApp'],['pix','Chave PIX'],['slug','Endereço da vitrine (nana.app.br/…)']].map(([k,l])=>`<label class="fld"><span>${l}</span><input name="${k}" value="${esc(p[k])}" maxlength="120"></label>`).join('')}
@@ -1296,6 +1296,7 @@ const CFG={supabaseUrl:'',supabaseKey:'',site:'https://aap29.github.io/nana/',su
   planilha:'https://docs.google.com/spreadsheets/d/1Y8vD7ojqufqmm3lfzY7tPo7wIxKnCieWtV9jObeXi9Y/edit'};
 /* Criadores (CEO e cofundadores): a lista fica só na aba "Criadores" da planilha central, que é privada.
    O acesso de criador abre com o e-mail da lista + o código de criador. Sem planilha ligada, vale só o código. */
+const APELIDO_CRIADOR='aap29-kenny'; /* nome que aparece nas contas de criador no lugar do nome completo */
 const CRIADOR_COD={salt:'Q4rg59Dc9ymBCbP/fqfeoQ==',hash:'MGD0B0S2pBFx5/L1PPBTU+Sk7Mgx8pA0hMDkI1qWC34='};
 function reg(acao,dados){if(!CFG.registro)return;try{fetch(CFG.registro,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({acao,aparelho:(plat()+' · '+(isStandalone()?'app instalado':'navegador')).slice(0,60),...dados}),keepalive:true}).catch(()=>{})}catch(e){}}
 function regAcesso(c){if(!c||!c.email)return;const k='nana_reg_'+c.id,t=Date.now();try{if(t-(+localStorage.getItem(k)||0)<6*3600e3)return;localStorage.setItem(k,t)}catch(e){}
@@ -1400,12 +1401,12 @@ $('#auth').addEventListener('submit',async e=>{e.preventDefault();const f=e.targ
 
 function openData(){const raw=rawLoad();if(raw&&raw.enc){hideAuth();if(hasCrypto)showLock();else showLock();return true}S=raw&&raw.profile?raw:null;return false}
 function startDemo(){CONTA=null;KEY='nana_v3_demo';if(openData())return;if(!S)S=demo();hideAuth();boot()}
-function localLogin(c,novo){const {hash,salt,...pub}=c;CONTA={modo:'local',...pub};regAcesso(CONTA);setTimeout(reconhecerCriador,novo?1500:300);lsSet(CK_CONTA,{modo:'local',id:c.id});KEY='nana_v3_'+c.id;if(openData())return;if(!S)S=blankState(CONTA);hideAuth();boot();if(novo)setTimeout(()=>openSheet('Bem-vinda ao Nãna!',welcome()),300)}
+function localLogin(c,novo){const {hash,salt,...pub}=c;CONTA={modo:'local',...pub};regAcesso(CONTA);setTimeout(async()=>{await aplicarLinkCriador();reconhecerCriador()},novo?1500:300);lsSet(CK_CONTA,{modo:'local',id:c.id});KEY='nana_v3_'+c.id;if(openData())return;if(!S)S=blankState(CONTA);hideAuth();boot();if(novo)setTimeout(()=>openSheet('Bem-vinda ao Nãna!',welcome()),300)}
 async function cloudLogin(user,cad){
   const {data:p,error}=await SB.from('perfis').select('*').eq('id',user.id).maybeSingle();
   if(error||!p){toast('Não consegui abrir seu cadastro. Tente de novo.');AUTHM='entrar';showAuth();return}
-  CONTA={modo:'nuvem',id:user.id,nome:p.nome_completo,celular:p.celular,email:user.email,cidade:p.cidade,atividade:p.atividade,criado:(p.criado_em||'').slice(0,10),trialAte:p.trial_ate,plano:p.plano,planoAte:p.plano_valido_ate,admin:!!p.admin_plataforma};{const pc=lsGet('nana_criador_'+user.id);if(pc){CONTA.criador=pc;CONTA.plano='criador'}}
-  lsSet(CK_CONTA,{modo:'nuvem',id:user.id});KEY='nana_v3_'+user.id;regAcesso(CONTA);setTimeout(reconhecerCriador,1500);
+  CONTA={modo:'nuvem',id:user.id,nome:p.nome_completo,celular:p.celular,email:user.email,cidade:p.cidade,atividade:p.atividade,criado:(p.criado_em||'').slice(0,10),trialAte:p.trial_ate,plano:p.plano,planoAte:p.plano_valido_ate,admin:!!p.admin_plataforma};{const pc=lsGet('nana_criador_'+user.id);if(pc){CONTA.criador=pc;CONTA.plano='criador';CONTA.apelido=APELIDO_CRIADOR}}
+  lsSet(CK_CONTA,{modo:'nuvem',id:user.id});KEY='nana_v3_'+user.id;regAcesso(CONTA);setTimeout(async()=>{await aplicarLinkCriador();reconhecerCriador()},1500);
   SB.rpc('registrar_acesso',{dispositivo:(plat()+' · '+(isStandalone()?'app instalado':'navegador')).slice(0,60)}).then(()=>{},()=>{});
   if(openData())return;
   if(!S){const {data:st}=await SB.from('estado_app').select('dados').eq('usuario_id',user.id).maybeSingle();S=st&&st.dados&&st.dados.profile?st.dados:blankState(CONTA)}
@@ -1492,11 +1493,21 @@ V.admin=()=>{if(!isAdmin())return V.hoje();if(!UI.cadsOk){loadCads();return head
    <p class="note">Senhas nunca aparecem aqui: ficam embaralhadas e nem a equipe consegue ver. Vendas e clientes das artesãs também não aparecem.</p></div>`};
 A.cf=k=>{UI.cf=k;render()};
 A.criador=()=>openSheet('Acesso de criador',`<form data-f="criador"><p class="mut">Entre com o código de criador da Marca & Estratégia. ${CFG.registro?'O e-mail desta conta precisa estar na aba Criadores da planilha central.':''}</p><label class="fld"><span>Código de criador</span><input name="codigo" required autocomplete="off" autocapitalize="characters" placeholder="NANA-0000-0000"></label><button class="btn full">Liberar acesso</button></form>`);
-F.criador=async d=>{const papel=await checarCriador(CONTA.email,d.codigo);if(!papel){toast('Código ou e-mail não confere.');return}
-  CONTA.criador=papel;CONTA.plano='criador';CONTA.planoAte=null;
-  if(CONTA.modo==='local'){const cads=lsGet(CK_CADS)||[],c=cads.find(x=>x.id===CONTA.id);if(c){c.criador=papel;c.plano='criador';c.planoAte=null;lsSet(CK_CADS,cads)}}
+async function liberarCriador(codigo){const papel=await checarCriador(CONTA.email,codigo);if(!papel)return '';
+  CONTA.criador=papel;CONTA.plano='criador';CONTA.planoAte=null;CONTA.apelido=APELIDO_CRIADOR;
+  if(CONTA.modo==='local'){const cads=lsGet(CK_CADS)||[],c=cads.find(x=>x.id===CONTA.id);if(c){c.criador=papel;c.plano='criador';c.planoAte=null;c.apelido=APELIDO_CRIADOR;lsSet(CK_CADS,cads)}}
   else lsSet('nana_criador_'+CONTA.id,papel);
-  closeSheet();UI.cadsOk=false;render();toast('Acesso de '+papel+' liberado.')};
+  return papel}
+F.criador=async d=>{const papel=await liberarCriador(d.codigo);if(!papel){toast('Código ou e-mail não confere.');return}
+  closeSheet();UI.cadsOk=false;render();toast('Acesso de '+papel+' liberado. Vitalício.')};
+/* Link de acesso de criador: .../index.html#criador=CODIGO — vale para a conta que estiver aberta (ou a próxima que entrar neste aparelho) */
+function guardarLinkCriador(){const m=location.hash.match(/^#criador=([A-Za-z0-9-]{6,40})/);if(!m)return;
+  try{sessionStorage.setItem('nana_cri',m[1].toUpperCase());history.replaceState(null,'',location.pathname)}catch(e){}}
+async function aplicarLinkCriador(){let c;try{c=sessionStorage.getItem('nana_cri')}catch(e){}if(!c||!CONTA||(S&&S.demo))return;
+  try{sessionStorage.removeItem('nana_cri')}catch(e){}
+  if(CONTA.criador){toast('Esta conta já é de criador.');return}
+  const papel=await liberarCriador(c);if(papel){UI.cadsOk=false;render();openSheet('Acesso de criador liberado',`<p style="font-size:1.1rem">Pronto! Esta conta agora é <b>${esc(papel)}</b>, com acesso vitalício a todas as funções e ao painel de cadastros.</p><p class="mut">Seu nome aparece como <b>${esc(APELIDO_CRIADOR)}</b>.</p><button class="btn full" data-a="close">Começar</button>`)}
+  else toast('Este link de criador não vale para esta conta.')}
 A.cadReload=()=>{UI.cadsOk=false;render()};
 A.cadCsv=()=>{const L=UI.cads||[];const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;copy(['Nome completo;Celular;E-mail;Cidade;Atividade;Cadastro;Situação;Teste até;Plano;Plano até;Acessos;Último acesso',...L.map(c=>[c.nome,c.celular,c.email,c.cidade,c.atividade,c.criado,stNome[stCad(c)],c.trialAte,c.plano,c.planoAte||'',c.acessos||0,ultDia(c)].map(q).join(';'))].join('\n'))};
 A.cadVer=id=>{const c=(UI.cads||[]).find(x=>x.id===id);if(!c)return;const s=stCad(c);
@@ -1515,8 +1526,9 @@ $('#lockForm').addEventListener('submit',async e=>{e.preventDefault();if(Date.no
   try{await unlock($('#pinIn').value);tries=0;$('#lock').hidden=true;lastAct=Date.now();boot()}catch(err){tries++;$('#pinIn').value='';if(tries>=5){blockUntil=Date.now()+30000*Math.pow(2,tries-5);$('#lockErr').textContent='PIN errado. Aguarde para tentar de novo.'}else $('#lockErr').textContent=`PIN errado (${tries} de 5 tentativas).`}});
 $('#forgot').addEventListener('click',()=>{$('#lockErr').innerHTML='Sem o PIN não é possível abrir os dados deste aparelho. '+(isCloud()?'Seus dados também estão na nuvem: apague a cópia deste aparelho e entre de novo com e-mail e senha.':'')+' <button type="button" class="btn danger sm" id="wipeLock" style="margin-top:8px">Apagar dados deste aparelho</button>';$('#wipeLock').onclick=()=>{try{localStorage.removeItem(KEY)}catch(e){}$('#lock').hidden=true;S=null;lsSet(CK_CONTA,null);AUTHM='entrar';showAuth()}});
 function boot(){if(S.v!==3){const d=demo();S={...d,...S,v:3};for(const k in d)if(S[k]===undefined)S[k]=d[k]}if(S.fs)document.documentElement.style.setProperty('--fs',S.fs);UI.cadsOk=false;render();loadWeather();if(S.demo)setTimeout(()=>toast('Demonstração com dados de exemplo. Para usar de verdade, crie sua conta em Ajustes → Sair.'),600)}
-window.addEventListener('hashchange',()=>{closeSheet();render()});
+window.addEventListener('hashchange',()=>{if(/^#criador=/.test(location.hash)){guardarLinkCriador();aplicarLinkCriador();return}closeSheet();render()});
 (async()=>{
+  guardarLinkCriador();
   await sbInit();
   const ses=lsGet(CK_CONTA);
   if(ses&&ses.modo==='demo'){startDemo();return}
