@@ -230,6 +230,44 @@ table.tb{width:100%;border-collapse:collapse;font-size:.92rem}
  .cols3{grid-template-columns:repeat(3,minmax(0,1fr))}
  .fab{bottom:28px;right:28px}.toast{bottom:30px}
 }
+
+/* ===== v3 — visual moderno + foto das artesãs ao fundo ===== */
+:root{--shadow:0 1px 2px rgba(43,20,40,.05),0 12px 30px rgba(43,20,40,.09);--grad:linear-gradient(135deg,#4b1d50 0%,#6d2c6f 55%,#a8431c 100%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--shadow:0 1px 2px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.35)}}
+:root[data-theme=dark]{--shadow:0 1px 2px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.35)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,var(--bg) 0%,transparent 28%,transparent 62%,var(--bg) 100%),url(fundo-artesas.jpg) center 70%/cover no-repeat;opacity:.16;filter:saturate(.85)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) body::before{opacity:.22}}
+:root[data-theme=dark] body::before{opacity:.22}
+.pat{background:linear-gradient(135deg,rgba(75,29,80,.92) 0%,rgba(109,44,111,.80) 50%,rgba(168,67,28,.66) 100%),url(fundo-artesas.jpg) center 82%/cover no-repeat}
+.top{background:linear-gradient(90deg,#4b1d50,#5e2662)}
+.hero{border-radius:0 0 32px 32px;box-shadow:0 14px 34px rgba(75,29,80,.28);padding-bottom:30px}
+.hero .sum div,.authhero .free{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.hero .sum div{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.18);border-radius:18px}
+.card{border:1px solid transparent;border-radius:24px;box-shadow:var(--shadow)}
+.btn{box-shadow:0 6px 16px rgba(168,67,28,.22);transition:transform .12s,box-shadow .12s}
+.btn:active{transform:scale(.98)}
+.btn.plum{background:linear-gradient(135deg,#4b1d50,#6d2c6f);box-shadow:0 6px 16px rgba(75,29,80,.25)}
+.btn.sun{box-shadow:0 6px 16px rgba(242,179,61,.3)}
+.btn.ghost,.btn.danger{box-shadow:none}
+.qa button{border:0;border-radius:22px;box-shadow:var(--shadow);min-height:96px;gap:8px;font-size:.92rem}
+.qa svg{width:50px;height:50px;padding:12px;border-radius:16px;color:#fff;background:linear-gradient(135deg,#c2562a,#a8431c)}
+.qa button:nth-child(4n+2) svg{background:linear-gradient(135deg,#7d3a80,#4b1d50)}
+.qa button:nth-child(4n+3) svg{background:linear-gradient(135deg,#f2b33d,#d98a1c);color:#2b1428}
+.qa button:nth-child(4n+4) svg{background:linear-gradient(135deg,#3f8a5c,#2f6b45)}
+.chip{border-color:transparent;box-shadow:var(--shadow)}
+.chip[aria-pressed=true]{background:var(--grad);border-color:transparent}
+.tabs{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));max-width:600px;margin-inline:auto;border:0;border-radius:26px;padding-bottom:0;box-shadow:0 14px 36px rgba(43,20,40,.22)}
+.tabs button{isolation:isolate}
+.tabs button[aria-current=page]{color:var(--terra)}
+.tabs button[aria-current=page]::before{content:"";position:absolute;top:7px;left:50%;transform:translateX(-50%);width:56px;height:34px;border-radius:17px;background:var(--terraBg);z-index:-1}
+.fab{bottom:calc(98px + env(safe-area-inset-bottom));background:linear-gradient(135deg,#f6c66a,#f2b33d);box-shadow:0 10px 26px rgba(168,67,28,.35)}
+.app{padding-bottom:130px}
+.toast{bottom:104px}
+.sheet-box{border-radius:30px 30px 0 0}
+.authcard{border-radius:28px}
+@media (min-width:760px){.hero{border-radius:32px}}
+@media (min-width:1000px){.side{background:linear-gradient(180deg,rgba(75,29,80,.97),rgba(75,29,80,.92) 60%,rgba(109,44,111,.9)),url(fundo-artesas.jpg) center/cover}.side button.nav[aria-current=page]{background:rgba(255,255,255,.18);box-shadow:inset 3px 0 0 var(--sun)}.toast{bottom:30px}.app{padding-bottom:40px}.fab{bottom:28px}}
+@media (prefers-reduced-motion:reduce){.btn{transition:none}}
 </style>
 </head>
 <body>

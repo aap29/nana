@@ -71,6 +71,13 @@ footer{text-align:center;color:var(--mut);padding:30px 18px 50px;font-size:.9rem
 .toast.on{opacity:1}
 @media (min-width:860px){.hin{grid-template-columns:1.2fr .8fr}}
 @media (prefers-reduced-motion:no-preference){.phone{animation:up .6s ease-out}@keyframes up{from{transform:translateY(16px);opacity:0}}}
+
+/* v3 — foto das artesãs */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,var(--bg) 0%,transparent 30%,transparent 65%,var(--bg)),url(fundo-artesas.jpg) center 70%/cover no-repeat;opacity:.14}
+.hero{background:linear-gradient(135deg,rgba(75,29,80,.92) 0%,rgba(109,44,111,.80) 50%,rgba(168,67,28,.66) 100%),url(fundo-artesas.jpg) center 82%/cover no-repeat}
+.card{border-color:transparent;border-radius:24px;box-shadow:0 1px 2px rgba(43,20,40,.05),0 12px 30px rgba(43,20,40,.09)}
+.btn{box-shadow:0 8px 20px rgba(0,0,0,.18)}.btn.alt,.btn.g{box-shadow:none}
+.phone{box-shadow:0 30px 70px rgba(0,0,0,.45),inset 0 0 0 2px #3a2440}
 </style>
 </head>
 <body>
