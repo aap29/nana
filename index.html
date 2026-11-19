@@ -1436,7 +1436,10 @@ function installSteps(p){const off=!/github\.io$/.test(location.hostname)&&!/nan
   return `${off?`<div class="demo">Para instalar, abra o endereço oficial do Nãna: <a href="${CFG.site}" target="_blank" rel="noopener">${CFG.site}</a></div>`:''}
    ${['android','ios','pc'].sort((a,b)=>(a===p?-1:b===p?1:0)).map(k=>`<details ${k===p?'open':''} class="card"><summary style="font-weight:800;cursor:pointer;min-height:32px">${names[k]}${k===p?' (este aparelho)':''}</summary><ol style="padding-left:20px;line-height:1.7">${L[k].map(x=>`<li>${x}</li>`).join('')}</ol></details>`).join('')}
    <p class="note">Não ocupa quase nada de espaço e não precisa de loja de aplicativos. As atualizações chegam sozinhas.</p>`}
-if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude/.test(location.hostname)){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{reg.update().catch(()=>{});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{})})}).catch(()=>{});
+ /* app instalado: quando sair versão nova, recarrega sozinho uma vez */
+ let _rl=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(_rl)return;_rl=true;try{if(sessionStorage.getItem('nana_rl'))return;sessionStorage.setItem('nana_rl',1)}catch(e){}location.reload()});}
 
 /* ---- Baixar e compartilhar ---- */
 V.baixar=()=>head('Baixar e compartilhar')+`<div class="wrap"><div class="cols">

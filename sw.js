@@ -1,6 +1,6 @@
 /* Nãna — service worker: deixa o app abrir rápido e funcionar com internet fraca.
    Nunca guarda dados de conta nem respostas do banco: só os arquivos do app. */
-const CACHE = 'nana-app-v3';
+const CACHE = 'nana-app-v4';
 const SHELL = ['./', './index.html', './instalar.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './favicon.png', './fundo-artesas.jpg'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
