@@ -48,6 +48,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .hero .sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:16px}
 .hero .sum div{background:rgba(255,255,255,.13);border-radius:16px;padding:12px}
 .hero .sum b{display:block;font:800 1.45rem/1.1 "Baloo 2",sans-serif;white-space:nowrap}
+.sumvazio{margin:16px 0 0;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);font-size:.95rem}
 .hero .sum span{font-size:.85rem;opacity:.92}
 .wrap{padding:0 16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin:14px 0}
@@ -547,7 +548,7 @@ V.hoje=()=>{
   const ch=chegando(),wa=weatherAlerts();
   const ofn=S.ofSel==='todos'?'todos os ofícios':OF(S.ofSel)?.nome;
   return `<section class="hero pat"><p class="hi">${g},</p><h1>${esc(first(myName()))}</h1><p style="opacity:.9">${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})} · ${esc(ofn)}</p>
-   <div class="sum"><div><span>Entrou este mês</span><b>${brl(ms.rec)}</b></div><div><span>Pode ir pro seu bolso</span><b>${brl(Math.max(0,j.eu))}</b></div><div class="hide-s"><span>Falta receber</span><b>${brl(aReceber())}</b></div></div></section>
+   ${(ms.rec>0||j.eu>0)?`<div class="sum"><div><span>Entrou este mês</span><b>${brl(ms.rec)}</b></div><div><span>Pode ir pro seu bolso</span><b>${brl(Math.max(0,j.eu))}</b></div></div>`:`<p class="sumvazio">Quando você registrar sua primeira venda, aqui aparece quanto entrou e quanto pode ir pro seu bolso.</p>`}</section>
   <div class="wrap">
    <div class="qa" style="margin-top:14px">
     <button data-a="newMove:venda">${ICON.dinheiro}Registrar venda</button>
@@ -881,7 +882,7 @@ V.comunidade=()=>{
     <div class="cols">${['Nãna Tesoureira','Nãna Secretária','Nãna Eventos','Nãna Compras','Nãna Crescimento','Nãna Guardiã'].map(k=>{const its=sk.filter(s=>s.k===k);const d={'Nãna Tesoureira':'Confere lançamentos, contribuições e acertos','Nãna Secretária':'Convites, presenças e mensagens','Nãna Eventos':'Feiras, barracas e escalas','Nãna Compras':'Compras coletivas e rateio','Nãna Crescimento':'Vagas, plano e novas integrantes','Nãna Guardiã':'Segurança, acessos e registro'}[k];
       return `<div class="card"><h3>${k}</h3><p class="mut">${d}</p>${its.length?its.map(s=>`<div class="alert ${s.c}"><div class="t"><b>${esc(s.t)}</b></div><button class="btn sm" data-a="${s.a}">${s.b}</button></div>`).join(''):'<p class="in" style="font-weight:800">Tudo em ordem.</p>'}</div>`}).join('')}</div>`}
   else body=`<div class="card"><h3>Registro de atividades</h3><p class="mut">Tudo o que muda no grupo fica anotado: quem fez, o quê e quando.</p>${c.log.slice(0,60).map(l=>`<div class="li"><div class="t"><b>${esc(l.a)}</b><span class="mut">${esc(MEM(l.u)?.nome||'—')} · ${esc(l.q)}</span></div></div>`).join('')}</div>`;
-  return `<section class="hero pat"><p class="hi">Coletivo · você é a líder</p><h1>${esc(c.nome)}</h1><p style="opacity:.9">${esc(c.bairro)}</p><div class="sum"><div><span>Participantes</span><b>${c.membros.length} de ${c.tier}</b></div><div><span>Caixa</span><b>${brl(caixaSaldo())}</b></div><div class="hide-s"><span>Por pessoa</span><b>${brl(tier.p/c.membros.length)}</b></div></div></section>
+  return `<section class="hero pat"><p class="hi">Coletivo · você é a líder</p><h1>${esc(c.nome)}</h1><p style="opacity:.9">${esc(c.bairro)}</p><div class="sum"><div><span>Participantes</span><b>${c.membros.length} de ${c.tier}</b></div><div><span>Caixa</span><b>${brl(caixaSaldo())}</b></div></div></section>
   <div class="wrap"><div class="chips" style="margin-top:14px" role="group" aria-label="Seções do coletivo">${tabs.map(([k,n])=>`<button class="chip" aria-pressed="${ct===k}" data-a="ctab:${k}">${n}</button>`).join('')}</div>${body}${demoNote()}</div>`;
 };
 function acertoCard(evId,leader){const c=C(),e=c.eventos.find(x=>x.id===evId);if(!e)return '';const r=eventoAcerto(evId);const seeAll=leader||c.transp==='todos';
