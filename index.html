@@ -403,7 +403,7 @@ const b64=u=>{let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.app
 const ub64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 async function derive(pin,salt){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:210000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
 function save(){if(!S)return;clearTimeout(saveT);saveT=setTimeout(persist,120)}
-async function persist(){if(!S)return;try{
+async function persist(){if(!S)return;S._at=Date.now();try{
   if(S.lock&&S.lock.on&&CK){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},CK,new TextEncoder().encode(JSON.stringify(S)));localStorage.setItem(KEY,JSON.stringify({enc:1,salt:b64(SALT),iv:b64(iv),ct:b64(new Uint8Array(ct))}))}
   else localStorage.setItem(KEY,JSON.stringify(S));
 }catch(e){toast('Não consegui salvar neste aparelho (espaço cheio ou modo privado).')}
@@ -1357,6 +1357,7 @@ function authHTML(){const m=AUTHM;
    <p style="text-align:center;margin-top:12px"><a href="#" data-am="esqueci">Esqueci a senha</a> · <a href="#" data-am="criar">Criar conta</a></p></form>`;
   else if(m==='esqueci')f=`<form id="authForm" data-m="esqueci"><h2>Recuperar senha</h2>${isCloud()?`<p class="mut">Digite seu e-mail. Enviamos um link para criar uma senha nova.</p><label class="fld"><span>E-mail</span><input name="email" type="email" required></label><p id="authErr" class="out" aria-live="polite"></p><button class="btn full">Enviar link</button>`:`<p>Nesta versão, a conta fica guardada só neste aparelho, por isso a senha não pode ser recuperada por e-mail. Fale com o suporte do Nãna pelo WhatsApp (51) 98416-8848.</p><a class="btn full" href="${waLink(CFG.suporte,'Olá! Esqueci minha senha do Nãna.')}" target="_blank" rel="noopener">Falar com o suporte</a>`}<p style="text-align:center;margin-top:12px"><a href="#" data-am="entrar">Voltar</a></p></form>`;
   else if(m==='nova')f=`<form id="authForm" data-m="nova"><h2>Criar senha nova</h2>${pwdField('senha','Senha nova','new-password')}${pwdField('senha2','Repita a senha','new-password')}<p id="authErr" class="out" aria-live="polite"></p><button class="btn full">Salvar senha</button></form>`;
+  else if(m==='nuvem')f=`<div><h2>Seu Nãna agora fica na nuvem</h2><p>Para abrir a mesma conta em qualquer celular ou computador, entre ou crie sua conta com o <b>mesmo e-mail</b>. O que você já fez neste aparelho vai junto.</p><div class="grid2" style="margin-top:12px"><button class="btn" data-am="criar">Criar conta</button><button class="btn ghost" data-am="entrar">Já tenho, entrar</button></div></div>`;
   else if(m==='confirme')f=`<div><h2>Confirme seu e-mail</h2><p>Enviamos um link para o seu e-mail. Abra a mensagem e toque em confirmar. Depois volte aqui e entre com seu e-mail e senha.</p><p class="mut">Não chegou? Olhe a caixa de spam ou promoções.</p><button class="btn full" data-am="entrar">Já confirmei, entrar</button></div>`;
   return `<div class="authwrap">${hero}<div class="card authcard">${f}<hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
    <button type="button" class="btn sun full" data-install>${plat()==='pc'?'Instalar na área de trabalho':'Baixar o app'}</button>
@@ -1406,11 +1407,16 @@ function localLogin(c,novo){const {hash,salt,...pub}=c;CONTA={modo:'local',...pu
 async function cloudLogin(user,cad){
   const {data:p,error}=await SB.from('perfis').select('*').eq('id',user.id).maybeSingle();
   if(error||!p){toast('Não consegui abrir seu cadastro. Tente de novo.');AUTHM='entrar';showAuth();return}
-  CONTA={modo:'nuvem',id:user.id,nome:p.nome_completo,celular:p.celular,email:user.email,cidade:p.cidade,atividade:p.atividade,criado:(p.criado_em||'').slice(0,10),trialAte:p.trial_ate,plano:p.plano,planoAte:p.plano_valido_ate,admin:!!p.admin_plataforma};{const pc=lsGet('nana_criador_'+user.id);if(pc){CONTA.criador=pc;CONTA.plano='criador';CONTA.apelido=APELIDO_CRIADOR}}
+  CONTA={modo:'nuvem',id:user.id,nome:p.nome_completo,celular:p.celular,email:user.email,cidade:p.cidade,atividade:p.atividade,criado:(p.criado_em||'').slice(0,10),trialAte:p.trial_ate,plano:p.plano,planoAte:p.plano_valido_ate,admin:!!p.admin_plataforma};if(p.admin_plataforma){CONTA.criador=p.papel_criador||'Criador';CONTA.plano='criador';CONTA.planoAte=null;CONTA.apelido=APELIDO_CRIADOR}
   lsSet(CK_CONTA,{modo:'nuvem',id:user.id});KEY='nana_v3_'+user.id;regAcesso(CONTA);setTimeout(async()=>{await aplicarLinkCriador();reconhecerCriador()},1500);
   SB.rpc('registrar_acesso',{dispositivo:(plat()+' · '+(isStandalone()?'app instalado':'navegador')).slice(0,60)}).then(()=>{},()=>{});
   if(openData())return;
-  if(!S){const {data:st}=await SB.from('estado_app').select('dados').eq('usuario_id',user.id).maybeSingle();S=st&&st.dados&&st.dados.profile?st.dados:blankState(CONTA)}
+  {const {data:st}=await SB.from('estado_app').select('dados,atualizado_em').eq('usuario_id',user.id).maybeSingle();
+   const nuvem=st&&st.dados&&st.dados.profile?st.dados:null;
+   if(nuvem&&(!S||(nuvem._at||Date.parse(st.atualizado_em)||0)>(S._at||0)))S=nuvem;
+   if(!S){const loc=(lsGet(CK_CADS)||[]).find(x=>x.email===String(user.email||'').toLowerCase());if(loc){try{const r=JSON.parse(localStorage.getItem('nana_v3_'+loc.id));if(r&&r.profile&&!r.enc)S=r}catch(e){}}}
+   if(!S)S=blankState(CONTA);
+   if(!nuvem||S!==nuvem)setTimeout(()=>save(),800)}
   hideAuth();boot();if(cad)setTimeout(()=>openSheet('Bem-vinda ao Nãna!',welcome()),300)}
 const welcome=()=>`<p style="font-size:1.1rem">Que bom ter você aqui, ${esc(first(CONTA.nome))}! Seus 7 dias grátis começaram hoje e vão até <b>${fd(CONTA.trialAte)}</b>, com tudo liberado.</p><ol style="padding-left:20px;line-height:1.7"><li>Em <b>Mais → Perfil</b>, coloque o nome do ateliê e sua chave PIX.</li><li>Cadastre seus produtos em <b>Mais → Vitrine</b>.</li><li>Anote uma encomenda em <b>Pedidos</b>.</li><li>Quando entrar dinheiro, toque em <b>Registrar venda</b>: a Nãna separa o que é do ateliê e o que é seu.</li></ol><p class="mut">Tudo começa zerado: os números aparecem conforme você registra.</p><button class="btn full" data-a="close">Começar</button>`;
 async function sair(){clearTimeout(saveT);await persist();try{history.replaceState(null,'',location.pathname)}catch(e){}if(SB)await SB.auth.signOut().catch(()=>{});lsSet(CK_CONTA,null);S=null;CONTA=null;CK=null;closeSheet();AUTHM='entrar';showAuth()}
@@ -1497,7 +1503,11 @@ V.admin=()=>{if(!isAdmin())return V.hoje();if(!UI.cadsOk){loadCads();return head
    <p class="note">Senhas nunca aparecem aqui: ficam embaralhadas e nem a equipe consegue ver. Vendas e clientes das artesãs também não aparecem.</p></div>`};
 A.cf=k=>{UI.cf=k;render()};
 A.criador=()=>openSheet('Acesso de criador',`<form data-f="criador"><p class="mut">Entre com o código de criador da Marca & Estratégia. ${CFG.registro?'O e-mail desta conta precisa estar na aba Criadores da planilha central.':''}</p><label class="fld"><span>Código de criador</span><input name="codigo" required autocomplete="off" autocapitalize="characters" placeholder="NANA-0000-0000"></label><button class="btn full">Liberar acesso</button></form>`);
-async function liberarCriador(codigo){const papel=await checarCriador(CONTA.email,codigo);if(!papel)return '';
+async function liberarCriador(codigo){let papel='';
+  if(CONTA.modo==='nuvem'&&SB){let sug='Criador';if(CFG.registro){try{const j=await (await fetch(CFG.registro+'?acao=ehcriador&email='+encodeURIComponent(CONTA.email))).json();if(j&&j.criador)sug=j.papel||'Cofundador'}catch(e){}}
+    const {data,error}=await SB.rpc('virar_criador',{codigo:String(codigo||'').trim().toUpperCase(),papel:sug});if(error||!data)return '';papel=data;CONTA.admin=true}
+  else papel=await checarCriador(CONTA.email,codigo);
+  if(!papel)return '';
   CONTA.criador=papel;CONTA.plano='criador';CONTA.planoAte=null;CONTA.apelido=APELIDO_CRIADOR;
   if(CONTA.modo==='local'){const cads=lsGet(CK_CADS)||[],c=cads.find(x=>x.id===CONTA.id);if(c){c.criador=papel;c.plano='criador';c.planoAte=null;c.apelido=APELIDO_CRIADOR;lsSet(CK_CADS,cads)}}
   else lsSet('nana_criador_'+CONTA.id,papel);
@@ -1530,12 +1540,16 @@ $('#lockForm').addEventListener('submit',async e=>{e.preventDefault();if(Date.no
   try{await unlock($('#pinIn').value);tries=0;$('#lock').hidden=true;lastAct=Date.now();boot()}catch(err){tries++;$('#pinIn').value='';if(tries>=5){blockUntil=Date.now()+30000*Math.pow(2,tries-5);$('#lockErr').textContent='PIN errado. Aguarde para tentar de novo.'}else $('#lockErr').textContent=`PIN errado (${tries} de 5 tentativas).`}});
 $('#forgot').addEventListener('click',()=>{$('#lockErr').innerHTML='Sem o PIN não é possível abrir os dados deste aparelho. '+(isCloud()?'Seus dados também estão na nuvem: apague a cópia deste aparelho e entre de novo com e-mail e senha.':'')+' <button type="button" class="btn danger sm" id="wipeLock" style="margin-top:8px">Apagar dados deste aparelho</button>';$('#wipeLock').onclick=()=>{try{localStorage.removeItem(KEY)}catch(e){}$('#lock').hidden=true;S=null;lsSet(CK_CONTA,null);AUTHM='entrar';showAuth()}});
 function boot(){if(S.v!==3){const d=demo();S={...d,...S,v:3};for(const k in d)if(S[k]===undefined)S[k]=d[k]}if(S.fs)document.documentElement.style.setProperty('--fs',S.fs);UI.cadsOk=false;render();loadWeather();if(S.demo)setTimeout(()=>toast('Demonstração com dados de exemplo. Para usar de verdade, crie sua conta em Ajustes → Sair.'),600)}
+document.addEventListener('visibilitychange',async()=>{if(document.hidden||!SB||!CONTA||CONTA.modo!=='nuvem'||!S||S.demo||syncT&&0)return;
+  try{const {data:st}=await SB.from('estado_app').select('dados,atualizado_em').eq('usuario_id',CONTA.id).maybeSingle();const n=st&&st.dados;
+   if(n&&n.profile&&(n._at||0)>(S._at||0)+1000&&!(S.lock&&S.lock.on)){S=n;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render();toast('Atualizado com o que você fez em outro aparelho.')}}catch(e){}});
 window.addEventListener('hashchange',()=>{if(/^#criador=/.test(location.hash)){guardarLinkCriador();aplicarLinkCriador();return}closeSheet();render()});
 (async()=>{
   guardarLinkCriador();
   await sbInit();
   const ses=lsGet(CK_CONTA);
   if(ses&&ses.modo==='demo'){startDemo();return}
+  if(ses&&ses.modo==='local'&&isCloud()){lsSet(CK_CONTA,null);AUTHM='nuvem';showAuth();return}
   if(ses&&ses.modo==='local'){const c=(lsGet(CK_CADS)||[]).find(x=>x.id===ses.id);if(c){c.acessos=(c.acessos||0)+1;c.ultimo=new Date().toISOString();const cads=lsGet(CK_CADS);cads[cads.findIndex(x=>x.id===c.id)]=c;lsSet(CK_CADS,cads);localLogin(c,false);return}}
   if(isCloud()){const {data}=await SB.auth.getSession();if(data&&data.session){await cloudLogin(data.session.user);return}}
   const old=rawLoad();if(!ses&&old&&!lsGet(CK_CADS)){try{const v2=localStorage.getItem('nana_v3');if(v2){localStorage.setItem('nana_v3_demo',v2);localStorage.removeItem('nana_v3')}}catch(e){}}
