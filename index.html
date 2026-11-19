@@ -1300,6 +1300,9 @@ const CRIADOR_COD={salt:'Q4rg59Dc9ymBCbP/fqfeoQ==',hash:'MGD0B0S2pBFx5/L1PPBTU+S
 function reg(acao,dados){if(!CFG.registro)return;try{fetch(CFG.registro,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({acao,aparelho:(plat()+' · '+(isStandalone()?'app instalado':'navegador')).slice(0,60),...dados}),keepalive:true}).catch(()=>{})}catch(e){}}
 function regAcesso(c){if(!c||!c.email)return;const k='nana_reg_'+c.id,t=Date.now();try{if(t-(+localStorage.getItem(k)||0)<6*3600e3)return;localStorage.setItem(k,t)}catch(e){}
   reg('acesso',{email:c.email,nome:c.nome,celular:c.celular,cidade:c.cidade,atividade:c.atividade,trialAte:c.trialAte,id:c.id})}
+async function reconhecerCriador(){if(!CFG.registro||!CONTA||CONTA.criador||S&&S.demo)return;const k='nana_ehcri_'+CONTA.id;if(lsGet(k))return;
+  try{const r=await fetch(CFG.registro+'?acao=ehcriador&email='+encodeURIComponent(CONTA.email));const j=await r.json();lsSet(k,1);
+   if(j&&j.criador)setTimeout(()=>openSheet('Bem-vindo, '+esc(j.papel||'criador')+'!',`<p style="font-size:1.05rem">Seu e-mail está na lista de criadores do Nãna como <b>${esc(j.papel||'Cofundador')}</b>.</p><p class="mut">Para liberar o acesso livre e o painel de cadastros, digite o código de criador.</p><form data-f="criador"><label class="fld"><span>Código de criador</span><input name="codigo" required autocomplete="off" autocapitalize="characters" placeholder="NANA-0000-0000"></label><button class="btn full">Liberar acesso</button></form>`),700)}catch(e){}}
 async function checarCriador(email,codigo){codigo=String(codigo||'').trim().toUpperCase();if(!codigo)return '';
   if(CFG.registro){try{const r=await fetch(CFG.registro+'?acao=criador&email='+encodeURIComponent(email)+'&codigo='+encodeURIComponent(codigo));const j=await r.json();return j&&j.ok?(j.papel||'Cofundador'):''}catch(e){toast('Sem internet para conferir o código.');return ''}}
   return (await passHash(codigo,CRIADOR_COD.salt))===CRIADOR_COD.hash?'Criador':''}
@@ -1397,12 +1400,12 @@ $('#auth').addEventListener('submit',async e=>{e.preventDefault();const f=e.targ
 
 function openData(){const raw=rawLoad();if(raw&&raw.enc){hideAuth();if(hasCrypto)showLock();else showLock();return true}S=raw&&raw.profile?raw:null;return false}
 function startDemo(){CONTA=null;KEY='nana_v3_demo';if(openData())return;if(!S)S=demo();hideAuth();boot()}
-function localLogin(c,novo){const {hash,salt,...pub}=c;CONTA={modo:'local',...pub};regAcesso(CONTA);lsSet(CK_CONTA,{modo:'local',id:c.id});KEY='nana_v3_'+c.id;if(openData())return;if(!S)S=blankState(CONTA);hideAuth();boot();if(novo)setTimeout(()=>openSheet('Bem-vinda ao Nãna!',welcome()),300)}
+function localLogin(c,novo){const {hash,salt,...pub}=c;CONTA={modo:'local',...pub};regAcesso(CONTA);setTimeout(reconhecerCriador,novo?1500:300);lsSet(CK_CONTA,{modo:'local',id:c.id});KEY='nana_v3_'+c.id;if(openData())return;if(!S)S=blankState(CONTA);hideAuth();boot();if(novo)setTimeout(()=>openSheet('Bem-vinda ao Nãna!',welcome()),300)}
 async function cloudLogin(user,cad){
   const {data:p,error}=await SB.from('perfis').select('*').eq('id',user.id).maybeSingle();
   if(error||!p){toast('Não consegui abrir seu cadastro. Tente de novo.');AUTHM='entrar';showAuth();return}
   CONTA={modo:'nuvem',id:user.id,nome:p.nome_completo,celular:p.celular,email:user.email,cidade:p.cidade,atividade:p.atividade,criado:(p.criado_em||'').slice(0,10),trialAte:p.trial_ate,plano:p.plano,planoAte:p.plano_valido_ate,admin:!!p.admin_plataforma};{const pc=lsGet('nana_criador_'+user.id);if(pc){CONTA.criador=pc;CONTA.plano='criador'}}
-  lsSet(CK_CONTA,{modo:'nuvem',id:user.id});KEY='nana_v3_'+user.id;regAcesso(CONTA);
+  lsSet(CK_CONTA,{modo:'nuvem',id:user.id});KEY='nana_v3_'+user.id;regAcesso(CONTA);setTimeout(reconhecerCriador,1500);
   SB.rpc('registrar_acesso',{dispositivo:(plat()+' · '+(isStandalone()?'app instalado':'navegador')).slice(0,60)}).then(()=>{},()=>{});
   if(openData())return;
   if(!S){const {data:st}=await SB.from('estado_app').select('dados').eq('usuario_id',user.id).maybeSingle();S=st&&st.dados&&st.dados.profile?st.dados:blankState(CONTA)}

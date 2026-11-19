@@ -85,6 +85,10 @@ function doPost(e) {
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
+  if (p.acao === 'ehcriador') {
+    const papel = papelCriador_(p.email);
+    return ok_(papel ? { criador: true, papel } : { criador: false });
+  }
   if (p.acao === 'criador') {
     const papel = papelCriador_(p.email);
     const certo = String(p.codigo || '').trim().toUpperCase() ===
