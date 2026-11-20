@@ -327,6 +327,8 @@ const ST={novo:{n:'Novo pedido',next:'afazer',btn:'Aceitar pedido'},afazer:{n:'A
 const QST={rascunho:'Rascunho',enviado:'Enviado',aprovado:'Aprovado',recusado:'Recusado',vencido:'Vencido'};
 const PLANOS_IND={mensal:29.90,anual:249.90};
 const TIERS=[{n:5,p:79.90},{n:10,p:139.90},{n:25,p:299.90},{n:50,p:549.90},{n:100,p:999.90}];
+const PIX_CHAVE='(51) 98416-8848',PIX_COPIA='51984168848';
+const pixBox=(valor)=>`<div class="card" style="border:2px solid var(--sun);background:var(--sunBg)"><h3>Adesão pelo PIX</h3><p>A assinatura do Nãna é feita por <b>PIX</b>. A chave é o celular:</p><p style="font:800 1.5rem/1.2 'Baloo 2',sans-serif;margin:8px 0">${PIX_CHAVE}</p>${valor?`<p>Valor: <b>${valor}</b></p>`:''}<ol style="padding-left:20px;line-height:1.7;margin:8px 0"><li>No app do seu banco, escolha PIX → chave <b>celular</b> e cole o número.</li><li>Pague o valor do plano escolhido.</li><li>Mande o comprovante pelo WhatsApp (51) 98416-8848. Seu plano é ativado e tudo continua do jeito que estava.</li></ol><button class="btn sun sm" data-a="copyPix">Copiar chave PIX</button></div>`;
 const SUPORTE='51984168848';
 const CIDADES={'Porto Alegre':[-30.03,-51.23],'Canoas':[-29.92,-51.18],'São Leopoldo':[-29.76,-51.15],'Novo Hamburgo':[-29.68,-51.13],'Sapucaia do Sul':[-29.83,-51.15],'Viamão':[-30.08,-51.02],'Alvorada':[-29.99,-51.08],'Gravataí':[-29.94,-50.99],'Caxias do Sul':[-29.17,-51.18],'Pelotas':[-31.77,-52.34]};
 const CMP_T={prova:'Prova de peça',entrega:'Entrega combinada',venda:'Venda agendada',reuniao:'Reunião com cliente',visita:'Visita ao ateliê',outro:'Outro compromisso'};
@@ -937,7 +939,7 @@ V.planos=()=>{const ind=UI.cm==='ind',econ=PLANOS_IND.mensal*12-PLANOS_IND.anual
     <p style="font-weight:800">Cada participante recebe</p><ul><li>Agenda dos eventos do grupo</li><li>Mensagens e convites</li><li>Alertas (clima, eventos, pendências)</li><li>Lançamento das próprias vendas nas feiras</li></ul>
     <button class="btn full" data-a="assinar:col${sel}">Quero criar meu coletivo</button></div></div>
    <p class="note">Valores de 10 a 100 participantes são sugestão inicial e podem ser ajustados antes do lançamento.</p>`}
-   <p class="note">Nesta versão a assinatura é feita pelo WhatsApp com a equipe da Marca & Estratégia (PIX e ativação manual). O pagamento automático entra quando o meio de pagamento for configurado.</p></div>`};
+   ${pixBox('')}</div>`};
 
 /* ---- Segurança ---- */
 V.seguranca=()=>head('Segurança e privacidade',full()?'ajustes':'p_inicio')+`<div class="wrap"><div class="cols">
@@ -1113,7 +1115,9 @@ const A={
  cm:k=>{UI.cm=k;render()},
  tier:n=>{UI.tier=+n;render()},
  assinar:k=>{let txt;if(k==='mensal')txt=`Olá! Quero assinar o Nãna Profissional mensal (R$ 29,90/mês).`;else if(k==='anual')txt=`Olá! Quero assinar o Nãna Profissional anual (R$ 249,90/ano).`;else{const n=+k.replace('col',''),t=TIERS.find(x=>x.n===n);txt=`Olá! Quero criar um coletivo no Nãna para até ${n} participantes (${brl(t.p)}/mês). Eu serei a líder.`}
-   txt+=`\nNome: ${myName()}`;openSheet('Assinar o Nãna',`<p>Você vai falar com a equipe da Marca & Estratégia, que envia o PIX e ativa sua conta.</p><div class="card"><p style="white-space:pre-line">${esc(txt)}</p></div><a class="btn full" href="${waLink(SUPORTE,txt)}" target="_blank" rel="noopener">Continuar no WhatsApp</a><p class="mut" style="margin-top:10px">WhatsApp: (51) 98416-8848</p><p class="note">O pagamento automático ainda não está configurado. Nada é cobrado por este app.</p>`)},
+   txt+=`\nNome: ${myName()}`;const val=k==='mensal'?brl(PLANOS_IND.mensal)+' por mês':k==='anual'?brl(PLANOS_IND.anual)+' por ano':brl(TIERS.find(x=>x.n===+k.replace('col','')).p)+' por mês';txt+='\nJá fiz o PIX e vou mandar o comprovante.';
+   openSheet('Assinar o Nãna',`${pixBox(val)}<p style="margin-top:12px">Depois de pagar, envie esta mensagem com o comprovante:</p><div class="card"><p style="white-space:pre-line">${esc(txt)}</p></div><a class="btn full" href="${waLink(SUPORTE,txt)}" target="_blank" rel="noopener">Enviar comprovante no WhatsApp</a><p class="note">O app não cobra nada sozinho: a adesão é só pelo PIX acima, com ativação pela equipe Nãna.</p>`)},
+ copyPix:()=>copy(PIX_COPIA),
  mode:m=>{S.mode=m;if(m==='coletivo'&&!S.com){toast('Reinicie a demonstração para ver um coletivo de exemplo');S.mode='individual'}save();render()},
  useOf:id=>{S.ofSel=id;save();A.go('hoje');toast('Mostrando só: '+OF(id).nome)},
  editOf:id=>{const o=id?OF(id):{nome:'',cor:'#a8431c'};openSheet(id?'Editar ofício':'Novo ofício',`<form data-f="of" data-id="${id||''}"><label class="fld"><span>Nome da atividade</span><input name="nome" required maxlength="40" value="${esc(o.nome)}" placeholder="Ex.: Crochê, Cerâmica, Bonecas"></label><label class="fld"><span>Cor</span><select name="cor">${[['#a8431c','Terracota'],['#6d2c6f','Ameixa'],['#2f6b45','Verde folha'],['#c98a12','Amarelo ouro'],['#2d5f8a','Azul'],['#8a3b5c','Vinho']].map(([c,n])=>`<option value="${c}" ${o.cor===c?'selected':''}>${n}</option>`).join('')}</select></label><button class="btn full">Salvar</button>${id&&S.oficios.length>1?`<button type="button" class="btn danger full" data-a="delOf:${id}" style="margin-top:10px">Apagar ofício</button>`:''}</form>`)},
@@ -1298,6 +1302,10 @@ const CFG={supabaseUrl:'',supabaseKey:'',site:'https://aap29.github.io/nana/',su
 /* Criadores (CEO e cofundadores): a lista fica só na aba "Criadores" da planilha central, que é privada.
    O acesso de criador abre com o e-mail da lista + o código de criador. Sem planilha ligada, vale só o código. */
 const APELIDO_CRIADOR='aap29-kenny'; /* nome que aparece nas contas de criador no lugar do nome completo */
+/* E-mails do CEO e cofundadores: reconhecidos automaticamente, acesso livre e vitalício.
+   Guardados só embaralhados (SHA-256) para não ficarem expostos no código. */
+const CRIADORES_H={'te/Lx7FduPiFEwln1kkEK+7geNenwFFWAXA9kFzb6xU=':'CEO','CXFw5GKwRbIVTelyCdpooKpq7S1xTF9BpIQmY4Z6YJM=':'Cofundador','KC5mHNfdDpuoHvbjywTnhmavr3xczqFW81HbL0G1BLo=':'Cofundador','FM4dyKhvZjLTQ3hYpns9yb1QBzB1TKuqE7upvsnntSw=':'Cofundador'};
+async function papelPorEmail(em){try{const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('nana:'+String(em||'').trim().toLowerCase()));return CRIADORES_H[b64(new Uint8Array(d))]||''}catch(e){return ''}}
 const CRIADOR_COD={salt:'Q4rg59Dc9ymBCbP/fqfeoQ==',hash:'MGD0B0S2pBFx5/L1PPBTU+Sk7Mgx8pA0hMDkI1qWC34='};
 function reg(acao,dados){if(!CFG.registro)return;try{fetch(CFG.registro,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({acao,aparelho:(plat()+' · '+(isStandalone()?'app instalado':'navegador')).slice(0,60),...dados}),keepalive:true}).catch(()=>{})}catch(e){}}
 function regAcesso(c){if(!c||!c.email)return;const k='nana_reg_'+c.id,t=Date.now();try{if(t-(+localStorage.getItem(k)||0)<6*3600e3)return;localStorage.setItem(k,t)}catch(e){}
@@ -1331,7 +1339,7 @@ function banner(){const a=acesso();
   if(a.t==='teste')return `<div class="ban t" role="status"><span class="sp">Teste grátis: ${a.dias===0?'último dia':`faltam ${a.dias} dia${a.dias>1?'s':''}`}. Tudo liberado até ${fd(CONTA.trialAte)}.</span><button class="btn sm" data-a="go:planos">Assinar</button></div>`;
   if(a.t==='expirado')return `<div class="ban x" role="status"><span class="sp">Seu teste de 7 dias terminou. Seus dados estão guardados: você pode ver tudo, mas para criar e editar precisa de um plano.</span><button class="btn sm" data-a="go:planos">Ver planos</button></div>`;
   return ''}
-function expiredSheet(){openSheet('Seu teste grátis terminou',`<p style="font-size:1.1rem">Obrigada por testar o Nãna! Seus pedidos, clientes e valores continuam guardados, nada foi apagado.</p><p>Para voltar a registrar vendas, criar encomendas, orçamentos e usar as calculadoras, escolha um plano a partir de ${brl(PLANOS_IND.mensal)} por mês.</p><div class="grid2" style="margin-top:14px"><button class="btn ghost" data-a="close">Agora não</button><button class="btn" data-a="go:planos">Ver planos</button></div>`)}
+function expiredSheet(){openSheet('Seu teste grátis terminou',`<p style="font-size:1.1rem">Obrigada por testar o Nãna! Seus pedidos, clientes e valores continuam guardados, nada foi apagado.</p><p>Para voltar a registrar vendas, criar encomendas, orçamentos e usar as calculadoras, escolha um plano a partir de ${brl(PLANOS_IND.mensal)} por mês. A adesão é pelo PIX, chave celular <b>${PIX_CHAVE}</b>.</p><div class="grid2" style="margin-top:14px"><button class="btn ghost" data-a="close">Agora não</button><button class="btn" data-a="go:planos">Ver planos</button></div>`)}
 V.expirou=()=>`<div class="head"><h1>Função do plano Nãna</h1></div><div class="wrap"><div class="card" style="text-align:center"><h2>Seu teste de 7 dias terminou</h2><p>Seus dados continuam guardados. Hoje, Agenda, Pedidos e Dinheiro seguem abertos para você consultar. Para usar esta função de novo, escolha um plano.</p><div class="grid2" style="margin-top:12px"><button class="btn" data-a="go:planos">Ver planos</button><button class="btn ghost" data-a="go:hoje">Voltar</button></div></div></div>`;
 
 function blankState(c){const nm=c?c.nome:'Seu nome';return{demo:false,v:3,profile:{nome:nm,loja:`Ateliê ${first(nm)}`,bairro:c?c.cidade:'',cidade:c&&CIDADES[c.cidade]?c.cidade:'Porto Alegre',whats:c?c.celular:'',pix:'',bio:'',hora:20,entrega:'',slug:norm('atelie-'+first(nm)).replace(/[^a-z0-9]+/g,'-')},
@@ -1412,7 +1420,9 @@ $('#auth').addEventListener('submit',async e=>{e.preventDefault();const f=e.targ
 
 function openData(){const raw=rawLoad();if(raw&&raw.enc){hideAuth();if(hasCrypto)showLock();else showLock();return true}S=raw&&raw.profile?raw:null;return false}
 function startDemo(){CONTA=null;KEY='nana_v3_demo';if(openData())return;if(!S)S=demo();hideAuth();boot()}
-function localLogin(c,novo){const {hash,salt,...pub}=c;CONTA={modo:'local',...pub};regAcesso(CONTA);setTimeout(async()=>{await aplicarLinkCriador();reconhecerCriador()},novo?1500:300);lsSet(CK_CONTA,{modo:'local',id:c.id});KEY='nana_v3_'+c.id;if(openData())return;if(!S)S=blankState(CONTA);hideAuth();boot();if(novo)setTimeout(()=>openSheet('Bem-vinda ao Nãna!',welcome()),300)}
+async function localLogin(c,novo){const papelAuto=c.criador?'':await papelPorEmail(c.email);
+  if(papelAuto){c.criador=papelAuto;c.plano='criador';c.planoAte=null;c.apelido=APELIDO_CRIADOR;const cads=lsGet(CK_CADS)||[],i=cads.findIndex(x=>x.id===c.id);if(i>=0){cads[i]=c;lsSet(CK_CADS,cads)}}
+  const {hash,salt,...pub}=c;CONTA={modo:'local',...pub};regAcesso(CONTA);setTimeout(async()=>{await aplicarLinkCriador();reconhecerCriador()},novo?1500:300);lsSet(CK_CONTA,{modo:'local',id:c.id});KEY='nana_v3_'+c.id;if(openData())return;if(!S)S=blankState(CONTA);hideAuth();boot();if(papelAuto)setTimeout(()=>openSheet('Bem-vindo, '+papelAuto+'!',`<p style="font-size:1.1rem">Seu e-mail foi reconhecido como <b>${esc(papelAuto)}</b> do Nãna.</p><p>Acesso livre e vitalício a todas as funções e ao painel de cadastros. No registro do app você aparece como <b>${esc(APELIDO_CRIADOR)}</b>.</p><button class="btn full" data-a="close">Começar</button>`),300);else if(novo)setTimeout(()=>openSheet('Bem-vinda ao Nãna!',welcome()),300)}
 async function cloudLogin(user,cad){
   const {data:p,error}=await SB.from('perfis').select('*').eq('id',user.id).maybeSingle();
   if(error||!p){toast('Não consegui abrir seu cadastro. Tente de novo.');AUTHM='entrar';showAuth();return}

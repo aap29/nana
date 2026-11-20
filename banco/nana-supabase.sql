@@ -77,6 +77,14 @@ begin
           coalesce(new.raw_user_meta_data->>'atividade',''),
           case when (new.raw_user_meta_data->>'aceite_lgpd')::boolean then now() end)
   on conflict (id) do nothing;
+  -- CEO e cofundadores: reconhecidos pelo e-mail, acesso livre e vitalício
+  if lower(new.email) in ('andersonpinto.rs@gmail.com','corretorandersonalves.invest.rs@gmail.com',
+                          'anderson.invest.consorcios@gmail.com','consultoranderson.invest@gmail.com') then
+    perform set_config('nana.liberado', 'sim', true);
+    update public.perfis set admin_plataforma = true, plano = 'criador', plano_valido_ate = null,
+      papel_criador = case when lower(new.email) = 'andersonpinto.rs@gmail.com' then 'CEO' else 'Cofundador' end
+     where id = new.id;
+  end if;
   return new;
 end $$;
 drop trigger if exists ao_criar_usuario on auth.users;
