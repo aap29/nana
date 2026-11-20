@@ -1296,7 +1296,7 @@ function render(){
 /* ================= CONTA, CADASTRO E TESTE GRÁTIS ================= */
 /* Para ligar o banco na nuvem, preencha supabaseUrl e supabaseKey (chave "anon public" do Supabase).
    Vazio = contas guardadas só neste aparelho. */
-const CFG={supabaseUrl:'',supabaseKey:'',site:'https://aap29.github.io/nana/',suporte:'51984168848',trialDias:7,
+const CFG={supabaseUrl:'https://c--c92fe982-008b-4bbb-88b5-0fa9ad2d06c5-prod.lovable.cloud',supabaseKey:'sb_publishable_QQGDKuoZI0r7KV2gQKIPUg_okp1RTP8',site:'https://aap29.github.io/nana/',suporte:'51984168848',trialDias:7,
   registro:'', /* URL /exec do Apps Script da planilha central de cadastros */
   planilha:'https://docs.google.com/spreadsheets/d/1Y8vD7ojqufqmm3lfzY7tPo7wIxKnCieWtV9jObeXi9Y/edit'};
 /* Criadores (CEO e cofundadores): a lista fica só na aba "Criadores" da planilha central, que é privada.
@@ -1322,10 +1322,11 @@ let SB=null,CONTA=null,syncT=null,AUTHM='criar';
 const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
 const lsSet=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const isCloud=()=>!!SB;
+const erroPt=m=>{m=String(m||'');return /weak|easy to guess|pwned|leaked/i.test(m)?'Essa senha é muito conhecida e fácil de adivinhar. Escolha outra, misturando palavras, números e letras maiúsculas.':/registered|already/i.test(m)?'Este e-mail já tem conta. Use Entrar.':/at least|short|characters/i.test(m)?'A senha precisa de pelo menos 8 caracteres.':/rate|too many|seconds/i.test(m)?'Muitas tentativas seguidas. Espere um minuto e tente de novo.':/network|fetch/i.test(m)?'Sem conexão com a internet. Confira e tente de novo.':'Não deu para concluir: '+m};
 const isAdmin=()=>!!(S&&S.demo)||!!(CONTA&&(CONTA.admin||CONTA.criador));
 async function passHash(p,salt){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(p),'PBKDF2',false,['deriveBits']);const b=await crypto.subtle.deriveBits({name:'PBKDF2',salt:ub64(salt),iterations:150000,hash:'SHA-256'},k,256);return b64(new Uint8Array(b))}
 function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
-async function sbInit(){if(!CFG.supabaseUrl||!CFG.supabaseKey)return;try{await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js');SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey);
+async function sbInit(){if(!CFG.supabaseUrl||!CFG.supabaseKey)return;try{await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js');const K=CFG.supabaseKey;SB=window.supabase.createClient(CFG.supabaseUrl,K,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'nana-auth'},global:{fetch:(input,init)=>{const h=new Headers(init&&init.headers||{});if(/^sb_publishable_/.test(K)&&h.get('Authorization')==='Bearer '+K)h.delete('Authorization');h.set('apikey',K);return fetch(input,{...(init||{}),headers:h})}}});
   SB.auth.onAuthStateChange(ev=>{if(ev==='PASSWORD_RECOVERY'){AUTHM='nova';showAuth()}})}catch(e){SB=null}}
 
 function acesso(){if(!S||S.demo)return{t:'demo',ok:true};const c=CONTA;if(!c)return{t:'livre',ok:true};if(c.criador)return{t:'criador',ok:true,papel:c.criador};
@@ -1396,13 +1397,19 @@ $('#auth').addEventListener('submit',async e=>{e.preventDefault();const f=e.targ
     if(d.lgpd!=='on')return fail('Para continuar, aceite a política de privacidade.');
     const cad={nome:d.nome.trim().replace(/\s+/g,' '),celular:fmtTel(tel),email:em,cidade:d.cidade.trim(),atividade:d.atividade};
     if(isCloud()){const {data,error}=await SB.auth.signUp({email:em,password:d.senha,options:{data:{nome_completo:cad.nome,celular:cad.celular,cidade:cad.cidade,atividade:cad.atividade,aceite_lgpd:true},emailRedirectTo:location.origin+location.pathname}});
-      if(error)return fail(/registered/i.test(error.message)?'Este e-mail já tem conta. Use Entrar.':'Não deu para criar a conta: '+error.message);
+      if(error)return fail(erroPt(error.message));
       reg('cadastro',{id:data.user&&data.user.id,...cad,trialAte:dd(CFG.trialDias)});if(!data.session){AUTHM='confirme';showAuth();return}await cloudLogin(data.user,cad);return}
     const cads=lsGet(CK_CADS)||[];if(cads.some(c=>c.email===em))return fail('Este e-mail já tem conta neste aparelho. Use Entrar.');
     const salt=b64(crypto.getRandomValues(new Uint8Array(16)));const c={id:uid()+uid(),...cad,criado:TODAY(),trialAte:dd(CFG.trialDias),plano:'gratis',planoAte:null,salt,hash:await passHash(d.senha,salt),acessos:1,ultimo:new Date().toISOString(),lgpd:new Date().toISOString()};
     cads.push(c);lsSet(CK_CADS,cads);try{localStorage.setItem('nana_reg_'+c.id,Date.now())}catch(e){}reg('cadastro',{id:c.id,...cad,trialAte:c.trialAte});localLogin(c,true);return}
    if(m==='entrar'){const em=(d.email||'').trim().toLowerCase();
-    if(isCloud()){const {data,error}=await SB.auth.signInWithPassword({email:em,password:d.senha});if(error)return fail(/confirm/i.test(error.message)?'Confirme seu e-mail antes de entrar (veja sua caixa de entrada).':'E-mail ou senha não conferem.');await cloudLogin(data.user);return}
+    if(isCloud()){let {data,error}=await SB.auth.signInWithPassword({email:em,password:d.senha});
+      if(error&&!/confirm/i.test(error.message)){const loc=(lsGet(CK_CADS)||[]).find(x=>x.email===em);
+        if(loc&&(await passHash(d.senha,loc.salt))===loc.hash){const r=await SB.auth.signUp({email:em,password:d.senha,options:{data:{nome_completo:loc.nome,celular:loc.celular,cidade:loc.cidade,atividade:loc.atividade,aceite_lgpd:true}}});
+          if(!r.error&&r.data.session){toast('Pronto! Sua conta agora está na nuvem e abre em qualquer aparelho.');await cloudLogin(r.data.user);return}
+          if(r.error&&/weak|easy to guess|pwned|leaked/i.test(r.error.message)){AUTHM='criar';showAuth();const f2=$('#authForm');if(f2){f2.email.value=em;f2.nome.value=loc.nome||'';f2.celular.value=loc.celular||'';f2.cidade.value=loc.cidade||'';}$('#authErr').textContent='Para levar sua conta para a nuvem, crie uma senha mais forte (a antiga é muito comum). Seus dados deste aparelho vão junto.';return}}
+        if(!loc)return fail('E-mail ou senha não conferem. Se você ainda não tem conta, toque em Criar conta.');}
+      if(error)return fail(/confirm/i.test(error.message)?'Confirme seu e-mail antes de entrar (veja sua caixa de entrada).':'E-mail ou senha não conferem.');await cloudLogin(data.user);return}
     UI.lastEmail=em;const cads=lsGet(CK_CADS)||[],c=cads.find(x=>x.email===em);
     if(!c){btn.disabled=false;err.innerHTML=`Não existe conta com este e-mail <b>neste aparelho</b>. Nesta versão, cada conta fica salva só no celular ou computador onde foi criada.${cads.length?`<br>Contas salvas aqui: ${cads.map(x=>esc(x.email.replace(/^(.{2}).*(@.*)$/,'$1•••$2'))).join(', ')}`:''}<br><a href="#" data-am="criar">Criar conta neste aparelho</a>`;return}
     const okSenha=async p=>(await passHash(p,c.salt))===c.hash;
